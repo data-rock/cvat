@@ -57,7 +57,8 @@ services:
       UI_SCHEME: http
       UI_HOST: localhost
       UI_PORT: 7080
-
+      REDIS_HOST: redis
+      DB_HOST: db
 
     volumes:
       - cvat_data:/home/django/data
@@ -67,7 +68,7 @@ services:
 
   cvat_ui:
     container_name: cvat_ui
-    image: nginx
+    image: cvat_ui
     restart: always
     build:
       context: .
@@ -78,6 +79,7 @@ services:
         socks_proxy:
         REACT_APP_API_PROTOCOL: http
         REACT_APP_API_HOST: localhost
+        # REACT_APP_API_HOST: cvat-Publi-106S355V0UEDV-542775237.ap-southeast-2.elb.amazonaws.com
         REACT_APP_API_PORT: 8080
       dockerfile: Dockerfile.ui
 
