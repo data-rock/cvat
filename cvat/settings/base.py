@@ -32,7 +32,6 @@ try:
     sys.path.append(BASE_DIR)
     from keys.secret_key import SECRET_KEY # pylint: disable=unused-import
 except ImportError:
-
     from django.utils.crypto import get_random_string
     keys_dir = os.path.join(BASE_DIR, 'keys')
     if not os.path.isdir(keys_dir):
@@ -192,11 +191,12 @@ UI_PORT = os.environ.get('UI_PORT', '3000')
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [UI_HOST]
 UI_URL = '{}://{}'.format(UI_SCHEME, UI_HOST)
-
-if UI_PORT and UI_PORT != '80':
+if len(UI_URL):
     UI_URL += ':{}'.format(UI_PORT)
 
-CORS_ORIGIN_WHITELIST = [UI_URL]
+# NB: BQ testing here allow all origin for cors, remove this later !!!
+CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_WHITELIST = [UI_URL]
 CORS_REPLACE_HTTPS_REFERER = True
 
 STATICFILES_FINDERS = [

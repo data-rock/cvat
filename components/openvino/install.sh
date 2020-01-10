@@ -28,7 +28,9 @@ apt-get update && apt-get install -y sudo cpio && \
 
 
 cat ../eula.cfg >> silent.cfg
-./install.sh -s silent.cfg
+mkdir tmp_folder
+mkdir download_tmp
+./install.sh -t tmp_folder -D download_tmp -s silent.cfg
 
 cd /tmp/components && rm openvino -r
 

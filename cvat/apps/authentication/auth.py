@@ -214,8 +214,11 @@ def filter_task_queryset(queryset, user):
     if has_admin_role(user) or has_observer_role(user):
         return queryset
     else:
+        # return queryset.filter(Q(owner=user) | Q(assignee=user) |
+        #     Q(segment__job__assignee=user) | Q(assignee=None)).distinct()
+        # NB: (BQ) remove Q(assignee=None) so users wont see the none assigned projects
         return queryset.filter(Q(owner=user) | Q(assignee=user) |
-            Q(segment__job__assignee=user) | Q(assignee=None)).distinct()
+            Q(segment__job__assignee=user) ).distinct()
 
 class TaskGetQuerySetMixin(object):
     def get_queryset(self):
