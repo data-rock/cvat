@@ -193,11 +193,11 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [UI_HOST]
 UI_URL = '{}://{}'.format(UI_SCHEME, UI_HOST)
 
-if UI_PORT and UI_PORT != '80':
+if UI_PORT != '80' and len(UI_URL):
     UI_URL += ':{}'.format(UI_PORT)
 
 # NB: BQ testing here allow all origin for cors, remove this later !!!
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [UI_URL]
 CORS_REPLACE_HTTPS_REFERER = True
 
