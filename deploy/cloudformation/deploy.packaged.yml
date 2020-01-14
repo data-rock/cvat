@@ -41,7 +41,7 @@ Parameters:
     Default: ECS test
   SSHKeyPairName:
     Description: SSH keypair name
-    Type: AWS::EC2::KeyPair::KeyName
+    Type: String
     Default: ecs-keypair
   DomainName:
     Description: domain name
@@ -55,7 +55,7 @@ Resources:
   CfnEcsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/dec10e7eba41d80b5f4ae0c0b543d59a.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/d164eb90f5dd7f6b389b282eeaad46f6.template
       Parameters:
         KeyPairName:
           Ref: SSHKeyPairName
@@ -146,7 +146,7 @@ Resources:
   CfnCloudWatchStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/914b306f2cba139197122ab5856c9b1c.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/8aaab2416b9082e18e9d6ccb06443613.template
       Parameters:
         ClusterName:
           Fn::GetAtt:
@@ -233,7 +233,7 @@ Resources:
   CfnCvatApiStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/001a6c59c722670087b6228fbb6b3071.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/01d8935848057bbe44cc7f1bacadfec8.template
       Parameters:
         ClusterName:
           Fn::GetAtt:
@@ -264,7 +264,7 @@ Resources:
           Fn::GetAtt:
           - CfnRedisStack
           - Outputs.ElastiCacheAddress
-        Priority: 2
+        Priority: 1
         DesiredCount: 1
         MaxCount: 4
         ImageUrl:
@@ -277,14 +277,10 @@ Resources:
         ContainerCpu: 512
         ContainerMemory: 1024
         AllowedHosts: '*'
-      Tags:
-      - Key: CostGroup
-        Value:
-          Ref: CostGroupTag
   CfnCvatUIStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/5e61a06daa062279f7a89b556986e7b6.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/f11f5f0671bddce9ee6eaa561e089a2c.template
       Parameters:
         ClusterName:
           Fn::GetAtt:
@@ -313,7 +309,3 @@ Resources:
             - Ref: CvatImageTag
         ContainerCpu: 128
         ContainerMemory: 256
-      Tags:
-      - Key: CostGroup
-        Value:
-          Ref: CostGroupTag

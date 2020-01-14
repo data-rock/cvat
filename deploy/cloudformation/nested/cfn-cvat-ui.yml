@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploy redis service into an ECS cluster behind a private load balancer.
+Description: Deploy cvat ui service into an ECS cluster behind a private load balancer.
 Parameters:
   ClusterName:
     Type: String

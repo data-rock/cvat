@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploy redis service into an ECS cluster behind a private load balancer.
+Description: Deploy Cvat app service into an ECS cluster behind a private load balancer.
 Parameters:
   ClusterName:
     Type: String
@@ -249,7 +249,7 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckIntervalSeconds: 10
+      HealthCheckIntervalSeconds: 6
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
@@ -257,7 +257,7 @@ Resources:
       Name: !Ref 'ServiceName'
       Port: 8080
       Protocol: HTTP
-      UnhealthyThresholdCount: 5
+      UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
       Matcher:
         HttpCode: '200-399'

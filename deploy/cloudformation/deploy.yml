@@ -42,7 +42,7 @@ Parameters:
     Default: ECS test
   SSHKeyPairName:
     Description: SSH keypair name
-    Type: AWS::EC2::KeyPair::KeyName
+    Type: String
     Default: ecs-keypair
   DomainName:
     Description: domain name
@@ -178,16 +178,13 @@ Resources:
         DbUser: !Ref DbUser
         DbPassword: !Ref 'DbPassword'
         RedisHost: !GetAtt [CfnRedisStack, Outputs.ElastiCacheAddress]
-        Priority: 2
+        Priority: 1
         DesiredCount: 1
         MaxCount: 4
         ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
         ContainerCpu: 512
         ContainerMemory: 1024
         AllowedHosts: '*'
-      Tags:
-        - Key: CostGroup
-          Value: !Ref CostGroupTag
 
   CfnCvatUIStack:
     Type: AWS::CloudFormation::Stack
@@ -205,6 +202,3 @@ Resources:
         ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatUIECRRepository], !Ref 'CvatImageTag' ] ]
         ContainerCpu: 128
         ContainerMemory: 256
-      Tags:
-        - Key: CostGroup
-          Value: !Ref CostGroupTag

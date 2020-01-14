@@ -22,8 +22,11 @@ TEMPLATE_FILE="$SCRIPT_DIR/../cloudformation/deploy.yml"
 PACKAGED_TEMPLATE_FILE="$SCRIPT_DIR/../cloudformation/$(basename "$TEMPLATE_FILE" .yml)".packaged.yml
 
 # Determine the parameters
-PARAMETER_FILE="$SCRIPT_DIR/../cloudformation/parameters_$STACK_SUFFIX.yml"
-PARAMETER_OVERRIDES=$(sed -e '/^#/d; /^$/d; s/#\/\///g; s/: /=/g; s/ *=/=/g;' $PARAMETER_FILE)
+PARAMETER_FILE="$SCRIPT_DIR/../cloudformation/parameters_$STACK_SUFFIX.json"
+PARAMETER_OVERRIDES=$(jq -r '.Parameters
+         | to_entries
+         | map("\"\(.key)=\(.value)\"")
+         | join(" ")' $PARAMETER_FILE)
 echo " 🌳 --parameter-overrides $PARAMETER_OVERRIDES"
 
 # Ensure that the deployment bucket exists
@@ -47,4 +50,5 @@ aws cloudformation deploy --no-fail-on-empty-changeset \
       $PARAMETER_OVERRIDES \
     --stack-name "$STACK_NAME" \
     --capabilities CAPABILITY_IAM \
-    --capabilities CAPABILITY_NAMED_IAM "$@"
+    --capabilities CAPABILITY_NAMED_IAM \
+    "$@"

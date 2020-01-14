@@ -31,7 +31,7 @@ Resources:
     Properties:
       EvaluationPeriods: '1'
       Statistic: Minimum
-      Threshold: '3'
+      Threshold: '15'
       AlarmDescription: Alarm if more than 3 containers with maximum size can be scheduled
       Period: '60'
       AlarmActions:
@@ -55,7 +55,7 @@ Resources:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
       AdjustmentType: ChangeInCapacity
-      Cooldown: 300
+      Cooldown: 450
       AutoScalingGroupName: !Ref ECSAutoScalingGroup
       ScalingAdjustment: -1
 

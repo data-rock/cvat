@@ -29,7 +29,7 @@ Parameters:
       r3.8xlarge, i2.xlarge, i2.2xlarge, i2.4xlarge, i2.8xlarge]
     ConstraintDescription: Please choose a valid instance type.
   KeyPairName:
-    Type: AWS::EC2::KeyPair::KeyName
+    Type: String
     Description: Name of an existing EC2 KeyPair to enable SSH access to the ECS instances
   SSHLocation:
     Description: ' The IP address range that can be used to SSH to the EC2 instances'
