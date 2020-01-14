@@ -23,7 +23,7 @@ PACKAGED_TEMPLATE_FILE="$SCRIPT_DIR/../cloudformation/$(basename "$TEMPLATE_FILE
 
 # Determine the parameters
 PARAMETER_FILE="$SCRIPT_DIR/../cloudformation/parameters_$STACK_SUFFIX.yml"
-PARAMETER_OVERRIDES=$(sed -e 's/"//g; s/:[^:\/\/]/=/g; s/$/"/g; s/ *=/=/g; s/^/"/g' $PARAMETER_FILE)
+PARAMETER_OVERRIDES=$(sed -e '/^#/d; /^$/d; s/#\/\///g; s/: /=/g; s/ *=/=/g;' $PARAMETER_FILE)
 echo " 🌳 --parameter-overrides $PARAMETER_OVERRIDES"
 
 # Ensure that the deployment bucket exists

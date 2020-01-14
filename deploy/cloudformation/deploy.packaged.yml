@@ -43,11 +43,19 @@ Parameters:
     Description: SSH keypair name
     Type: AWS::EC2::KeyPair::KeyName
     Default: ecs-keypair
+  DomainName:
+    Description: domain name
+    Type: String
+    Default: datarock.com.au
+  HostName:
+    Description: host name
+    Type: String
+    Default: label
 Resources:
   CfnEcsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/2fe00b1cdf55e6adabf1b5edfaace4dc.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/dec10e7eba41d80b5f4ae0c0b543d59a.template
       Parameters:
         KeyPairName:
           Ref: SSHKeyPairName
@@ -65,6 +73,8 @@ Resources:
         EFSNameTag: CvatEFSVolume
         SSLCertificateArn:
           Ref: SSLCertificateArn
+        HostName:
+          Ref: HostName
       Tags:
       - Key: CostGroup
         Value:
@@ -235,9 +245,7 @@ Resources:
           - CfnEcsStack
           - Outputs.PublicAPILoadBalancerListener
         ExternalUrl:
-          Fn::GetAtt:
-          - CfnEcsStack
-          - Outputs.ExternalDNSName
+          Fn::Sub: ${HostName}.${DomainName}
         VpcId:
           Fn::GetAtt:
           - CfnEcsStack
@@ -288,9 +296,7 @@ Resources:
           - CfnEcsStack
           - Outputs.PublicLoadBalancerListener
         ExternalUrl:
-          Fn::GetAtt:
-          - CfnEcsStack
-          - Outputs.ExternalDNSName
+          Fn::Sub: ${HostName}.${DomainName}
         VpcId:
           Fn::GetAtt:
           - CfnEcsStack
