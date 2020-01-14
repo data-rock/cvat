@@ -55,7 +55,7 @@ Resources:
   CfnEcsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/d164eb90f5dd7f6b389b282eeaad46f6.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/4b2f05b59881f9b747f74ff7cc8e57dd.template
       Parameters:
         KeyPairName:
           Ref: SSHKeyPairName
@@ -233,7 +233,7 @@ Resources:
   CfnCvatApiStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/01d8935848057bbe44cc7f1bacadfec8.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/4704ac8749cf6485f829ca95ed25ba2c.template
       Parameters:
         ClusterName:
           Fn::GetAtt:
@@ -280,7 +280,7 @@ Resources:
   CfnCvatUIStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/f11f5f0671bddce9ee6eaa561e089a2c.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/b535e3bc440c5a690d24dff764f3510b.template
       Parameters:
         ClusterName:
           Fn::GetAtt:

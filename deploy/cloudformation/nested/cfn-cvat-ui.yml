@@ -106,8 +106,8 @@ Resources:
       ServiceName: !Ref 'ServiceName'
       Cluster: !Ref 'ClusterName'
       DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 75
+        MaximumPercent: 300
+        MinimumHealthyPercent: 50
       DesiredCount: !Ref 'DesiredCount'
       TaskDefinition: !Ref 'TaskDefinition'
       LoadBalancers:

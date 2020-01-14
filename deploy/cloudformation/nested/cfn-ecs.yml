@@ -70,10 +70,10 @@ Parameters:
     Description: host name
     Type: String
     Default: label
-  # SpotPrice:
-  #   Description: Spot price to bid
-  #   Type: Number
-  #   Default: 0.0295
+  SpotPrice:
+    Description: Spot price to bid
+    Type: Number
+    Default: 0.0295
 
 Mappings:
   AWSRegionToAMI:
@@ -394,7 +394,7 @@ Resources:
             VolumeSize: 22 # minimum required to store the container layer infos
             VolumeType: gp2
       InstanceType: !Ref 'InstanceType'
-      # SpotPrice: !Ref SpotPrice
+      SpotPrice: !Ref SpotPrice
       IamInstanceProfile: !Ref 'EC2InstanceProfile'
       KeyName: !Ref 'KeyPairName'
       AssociatePublicIpAddress: false
