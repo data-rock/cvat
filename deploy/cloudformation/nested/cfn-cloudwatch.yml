@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+    This template deploys a Lambda Function and Auto Scaling CloudWatch Alarms and Scaling tasks
+Parameters:
+  ClusterName:
+    Type: String
+    Description: Name of ECS Cluster
+  ECSAutoScalingGroup:
+    Type: String
+    Description: ECS AutoScalingGroup Name
+Resources:
+  SchedulableContainersLowAlert:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '1'
+      Statistic: Minimum
+      Threshold: '1'
+      AlarmDescription: Alarm if less than 1 containers with maximum size can be scheduled
+      Period: '60'
+      AlarmActions:
+      - Ref: AutoScalingGroupScaleUpPolicy
+      Namespace: SERVICE/ECS
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref ClusterName
+      ComparisonOperator: LessThanThreshold
+      MetricName: SchedulableContainers
+
+  SchedulableContainersHighAlert:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '1'
+      Statistic: Minimum
+      Threshold: '3'
+      AlarmDescription: Alarm if more than 3 containers with maximum size can be scheduled
+      Period: '60'
+      AlarmActions:
+      - Ref: AutoScalingGroupScaleDownPolicy
+      Namespace: SERVICE/ECS
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref ClusterName
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: SchedulableContainers
+
+  AutoScalingGroupScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      Cooldown: 300
+      AutoScalingGroupName: !Ref ECSAutoScalingGroup
+      ScalingAdjustment: 1
+
+  AutoScalingGroupScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      Cooldown: 300
+      AutoScalingGroupName: !Ref ECSAutoScalingGroup
+      ScalingAdjustment: -1
+
+  SchedulableContainersLambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 'lambda.amazonaws.com'
+          Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+      - PolicyName: ecs
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: 'ecs:ListContainerInstances'
+            Resource: !Sub 'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ClusterName}'
+          - Effect: Allow
+            Action: 'ecs:DescribeContainerInstances'
+            Resource: '*'
+            Condition:
+              ArnEquals:
+                'ecs:cluster': !Sub 'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ClusterName}'
+      - PolicyName: cloudwatch
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: 'cloudwatch:PutMetricData'
+            Resource: '*'
+
+  SchedulableContainersLambdaPermission2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref LambdaHandlerFunction
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 'SchedulableContainersCron.Arn'
+
+  LambdaHandlerFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Environment:
+        Variables:
+          CLUSTER: !Ref ClusterName
+      Code:
+        ZipFile: !Join
+          - ''
+          - - |
+              CONTAINER_MAX_CPU = 256
+              CONTAINER_MAX_MEM = 512
+
+              import boto3,os
+              import datetime,dateutil
+
+              def lambda_handler(event, context):
+                cluster = os.environ.get('CLUSTER')
+                print('Calculating schedulable containers for cluster %s' % cluster)
+
+                ecs_client = boto3.client('ecs')
+                instance_list = ecs_client.list_container_instances(cluster=cluster, status='ACTIVE')
+                instances = ecs_client.describe_container_instances(cluster=cluster,
+                                                              containerInstances=instance_list['containerInstanceArns'])
+
+                schedulable_containers = 0
+
+                for instance in instances['containerInstances']:
+                  remaining_resources = {resource['name']: resource for resource in instance['remainingResources']}
+
+                  containers_by_cpu = int(remaining_resources['CPU']['integerValue'] / CONTAINER_MAX_CPU)
+                  containers_by_mem = int(remaining_resources['MEMORY']['integerValue'] / CONTAINER_MAX_MEM)
+
+                  schedulable_containers += min(containers_by_cpu, containers_by_mem)
+
+                  print('%s containers could be scheduled on %s based on CPU only' % (containers_by_cpu, instance['ec2InstanceId']))
+                  print('%s containers could be scheduled on %s based on memory only' % (containers_by_mem, instance['ec2InstanceId']))
+
+                print('Schedulable containers: %s' % schedulable_containers)
+
+                cw_client = boto3.client('cloudwatch')
+                cw_client.put_metric_data(Namespace='SERVICE/ECS',
+                                    MetricData=[{
+                                        'MetricName': 'SchedulableContainers',
+                                        'Dimensions': [{
+                                            'Name': 'ClusterName',
+                                            'Value': cluster
+                                        }],
+                                        'Timestamp': datetime.datetime.now(dateutil.tz.tzlocal()),
+                                        'Value': schedulable_containers
+                                    }])
+
+                print('Metric was send to CloudWatch')
+                return {}
+      Handler: index.lambda_handler
+      Role: !GetAtt
+        - SchedulableContainersLambdaRole
+        - Arn
+      Runtime: python3.6
+      Timeout: 60
+      MemorySize: 128
+
+  SchedulableContainersCron:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      ScheduleExpression: 'rate(1 minute)'
+      State: ENABLED
+      Targets:
+      - Arn: !GetAtt 'LambdaHandlerFunction.Arn'
+        Id: lambda

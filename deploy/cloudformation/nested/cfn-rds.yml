@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Cvat: Database resources (security groups and subnets to apply to an existing RDS)'
+Parameters:
+  VpcId:
+    Type: String
+    Description: The Id for the Vpc used for deployment
+  PrivateSubnetOne:
+    Type: String
+  PrivateSubnetTwo:
+    Type: String
+  DbName:
+    Type: String
+    Default: cvat
+    Description: The name of the postgres database resource
+  DbMasterUser:
+    Description: The username of the database
+    Type: String
+    NoEcho: true
+    Default: root
+  DbMasterPassword:
+    Description: The password of the database
+    Type: String
+    NoEcho: true
+  DbInstanceClass:
+    Description: Specifies the database instance type to be used
+    Type: String
+    Default: 'db.t3.micro'
+  EcsHostSecurityGroup:
+    Type: String
+    Description: EcsHostSecurityGroup
+
+Resources:
+  RdsSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Ref AWS::StackName
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+
+  VpcSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: 'RDS security group'
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref 'EcsHostSecurityGroup'
+          IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          Description: Allow ingress from ECS
+
+  DbInstance:
+   Type: AWS::RDS::DBInstance
+   Properties:
+     AllowMajorVersionUpgrade: false
+     AutoMinorVersionUpgrade: false
+     AllocatedStorage: 5
+     DBName: !Ref DbName
+     DBInstanceClass: !Ref DbInstanceClass
+     DBInstanceIdentifier: !Ref DbName
+     DBSubnetGroupName: !Ref RdsSubnetGroup
+     Engine: postgres
+     EngineVersion: '11.2'
+     MasterUsername: !Ref DbMasterUser
+     MasterUserPassword: !Ref DbMasterPassword
+     VPCSecurityGroups:
+       - !GetAtt VpcSecurityGroup.GroupId
+     EnableCloudwatchLogsExports:
+       - postgresql
+       - upgrade
+Outputs:
+ DbEndpoint:
+   Description: The database connection endpoint
+   Value: !GetAtt 'DbInstance.Endpoint.Address'
+
+ DbName:
+   Description: The database instance name
+   Value: !Ref DbInstance
+
