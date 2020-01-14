@@ -44,6 +44,14 @@ Parameters:
     Description: SSH keypair name
     Type: AWS::EC2::KeyPair::KeyName
     Default: ecs-keypair
+  DomainName:
+    Description: domain name
+    Type: String
+    Default: datarock.com.au
+  HostName:
+    Description: host name
+    Type: String
+    Default: label
 
 Resources:
   CfnEcsStack:
@@ -65,6 +73,7 @@ Resources:
         # SpotPrice: 0.0295
         EFSNameTag: CvatEFSVolume
         SSLCertificateArn:  !Ref SSLCertificateArn
+        HostName: !Ref HostName
       Tags:
         - Key: CostGroup
           Value: !Ref CostGroupTag
@@ -162,7 +171,7 @@ Resources:
         ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
         ServiceName: Cvat-app
         PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicAPILoadBalancerListener]
-        ExternalUrl: !GetAtt [CfnEcsStack, Outputs.ExternalDNSName]
+        ExternalUrl: !Sub "${HostName}.${DomainName}"
         VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
         DbHost: !GetAtt [CfnRdsStack, Outputs.DbEndpoint]
         DbName: !Ref DbName
@@ -188,7 +197,7 @@ Resources:
         ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
         ServiceName: Cvat-ui
         PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicLoadBalancerListener]
-        ExternalUrl: !GetAtt [CfnEcsStack, Outputs.ExternalDNSName]
+        ExternalUrl: !Sub "${HostName}.${DomainName}"
         VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
         Priority: 2
         DesiredCount: 1

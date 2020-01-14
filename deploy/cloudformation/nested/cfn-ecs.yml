@@ -62,6 +62,14 @@ Parameters:
   SSLCertificateArn:
     Description: SSL certificate arn
     Type: String
+  HostZone:
+    Description: host zone
+    Type: String
+    Default: datarock.com.au.
+  HostName:
+    Description: host name
+    Type: String
+    Default: label
   # SpotPrice:
   #   Description: Spot price to bid
   #   Type: Number
@@ -500,7 +508,21 @@ Resources:
       SecurityGroupIngress:
           # Allow access to ALB from anywhere on the internet
           - CidrIp: 0.0.0.0/0
-            IpProtocol: -1
+            IpProtocol: tcp
+            FromPort: '80'
+            ToPort: '80'
+          - CidrIp: 0.0.0.0/0
+            IpProtocol: tcp
+            FromPort: '443'
+            ToPort: '443'
+          - CidrIp: 0.0.0.0/0
+            IpProtocol: tcp
+            FromPort: '8080'
+            ToPort: '8080'
+          - CidrIp: 0.0.0.0/0
+            IpProtocol: tcp
+            FromPort: '8443'
+            ToPort: '8443'
   PublicLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -612,6 +634,24 @@ Resources:
       LoadBalancerArn: !Ref 'PublicLoadBalancer'
       Port: 8080
       Protocol: HTTP
+
+  # WIP: wait DNS zone to be transferred
+  # Route53Record:
+  #   Type: AWS::Route53::RecordSetGroup
+  #   Properties:
+  #     HostedZoneName: !Ref HostZone
+  #     Comment: Alias record for ESC deployment of CVAT
+  #     RecordSets:
+  #       - Name:
+  #           !If [
+  #             HasAlternateHostname,
+  #             !Sub '${AlternateAppHostname}.',
+  #             !Sub '${AppHostname}.',
+  #           ]
+  #         Type: A
+  #         AliasTarget:
+  #           HostedZoneId: !Ref LoadBalancerHostedZone
+  #           DNSName: !Ref LoadBalancerDnsName
 
   # This is an IAM role which authorizes ECS to manage resources on your
   # account on your behalf, such as updating your load balancer with the

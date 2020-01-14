@@ -47,7 +47,7 @@ Resources:
   CfnEcsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/dae980669ffb8fcdd30ad1d747fe4004.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/2fe00b1cdf55e6adabf1b5edfaace4dc.template
       Parameters:
         KeyPairName:
           Ref: SSHKeyPairName

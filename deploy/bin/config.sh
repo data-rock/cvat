@@ -1,27 +1,24 @@
 #!/bin/bash -eu
 CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)" # Figure out where the script is running
 
-# We're not running in codebuild
-$("$CONFIG_DIR"/semver-from-git.sh)
+# run semver-from-git.sh
+GIT_COMMIT_HASH=$(git rev-parse --short HEAD)
 
+export GIT_COMMIT_HASH=$GIT_COMMIT_HASH
 export STACK_PREFIX="cvat"
 export AWS_DEFAULT_REGION=ap-southeast-2
 export CLOUDFORMATION_TEMP_BUCKET_NAME="datarock-cvat-cloudformation-deploy-temp"
-export CVAT_IMAGE_REPO="datarock/cvat"
-export CVAT_UI_IMAGE_REPO="datarock/cvat_ui"
+export CVAT_IMAGE="datarock/cvat"
+export CVAT_UI_IMAGE="datarock/cvat_ui"
 
 if [ ! -z "${DEPLOY_PRODUCTION-}" ]; then
   # Production settings
-  export EXPECT_AWS_ACCOUNT="492445691754"
-else
-  # Development settings
-  export EXPECT_AWS_ACCOUNT="980755931163"
-fi
-
-if [ ! -z "${DEPLOY_PRODUCTION-}" ]; then
-  # Production settings
+  export AWS_ACCOUNT="492445691754"
   export STACK_SUFFIX="prod"
+  export CVAT_DOMAIN_NAME="label.datarock.com.au"
 else
   # Development settings
+  export AWS_ACCOUNT="980755931163"
   export STACK_SUFFIX="test"
+  export CVAT_DOMAIN_NAME="label-test.datarock.com.au"
 fi

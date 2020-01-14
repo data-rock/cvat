@@ -1,7 +1,7 @@
-ServiceName: Cvat-test
+ServiceName: Cvat
 SSLCertificateArn: arn:aws:acm:ap-southeast-2:980755931163:certificate/2b1200bc-34fc-44c9-9dc3-5ee5c3475a01
-CostGroupTag: Cvat-test
+CostGroupTag: Cvat
 SSHKeyPairName: ecs-keypair
 CvatECRRepositoryName: datarock/cvat
 CvatUIECRRepositoryName: datarock/cvat_ui
-HostName: label-test
+HostName: label
