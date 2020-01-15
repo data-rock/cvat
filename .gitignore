@@ -26,4 +26,4 @@ node_modules
 .DS_Store
 
 # Ignore packed yml
-# *.packaged.yml
+*.packaged.yml
