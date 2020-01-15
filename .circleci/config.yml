@@ -37,6 +37,9 @@ jobs:
       - jq/install
       - aws-cli/configure
 
+      - setup_remote_docker:
+          docker_layer_caching: true
+
       - run:
           name: Deploy
           command: |
@@ -52,7 +55,7 @@ jobs:
       - checkout
 
       - run:
-          name: Setup test Environment Variables
+          name: Setup production Environment Variables
           command: |
             echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PROD_ENV >> $BASH_ENV
             echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PROD_ENV >> $BASH_ENV
@@ -61,6 +64,9 @@ jobs:
       - aws-cli/install
       - jq/install
       - aws-cli/configure
+
+      - setup_remote_docker:
+          docker_layer_caching: true
 
       - run:
           name: Deploy
