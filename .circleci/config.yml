@@ -33,6 +33,10 @@ jobs:
             echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_TEST_ENV >> $BASH_ENV
             echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_TEST_ENV >> $BASH_ENV
             echo export AWS_DEFAULT_REGION="ap-southeast-2" >> $BASH_ENV
+      - aws-cli/install
+      - jq/install
+      - aws-cli/configure
+
       - run:
           name: Deploy
           command: |
@@ -50,10 +54,14 @@ jobs:
       - run:
           name: Setup test Environment Variables
           command: |
-            echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_TEST_ENV >> $BASH_ENV
-            echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_TEST_ENV >> $BASH_ENV
+            echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PROD_ENV >> $BASH_ENV
+            echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PROD_ENV >> $BASH_ENV
             echo export AWS_DEFAULT_REGION="ap-southeast-2" >> $BASH_ENV
             echo export DEPLOY_PRODUCTION="true" >> $BASH_ENV
+      - aws-cli/install
+      - jq/install
+      - aws-cli/configure
+
       - run:
           name: Deploy
           command: |
@@ -70,6 +78,8 @@ workflows:
             branches:
               only: deploy
       - deploy_test:
+          requires:
+            - deploy-test-approval
           filters:
             branches:
               only: deploy
@@ -82,6 +92,8 @@ workflows:
             branches:
               only: deploy
       - deploy_prod:
+          requires:
+            - deploy-prod-approval
           filters:
             branches:
               only: deploy
