@@ -6,6 +6,10 @@
     "SSHKeyPairName": "ecs-keypair",
     "CvatECRRepositoryName": "datarock/cvat",
     "CvatUIECRRepositoryName": "datarock/cvat_ui",
-    "HostName": "label"
+    "HostName": "label",
+    "ECSDesiredCapacity": "1",
+    "ECSMaxCapacity": "5",
+    "ServiceDesiredCount": "1",
+    "ServiceMaxCount": "5"
   }
 }

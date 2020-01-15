@@ -62,8 +62,8 @@ Parameters:
   SSLCertificateArn:
     Description: SSL certificate arn
     Type: String
-  HostZone:
-    Description: host zone
+  HostedZoneName:
+    Description: hosted zone
     Type: String
     Default: datarock.com.au.
   HostName:
@@ -73,7 +73,7 @@ Parameters:
   SpotPrice:
     Description: Spot price to bid
     Type: Number
-    Default: 0.0295
+    Default: 0.0292
 
 Mappings:
   AWSRegionToAMI:
@@ -636,22 +636,18 @@ Resources:
       Protocol: HTTP
 
   # WIP: wait DNS zone to be transferred
-  # Route53Record:
+  # ClusterDNSRecord:
   #   Type: AWS::Route53::RecordSetGroup
   #   Properties:
-  #     HostedZoneName: !Ref HostZone
-  #     Comment: Alias record for ESC deployment of CVAT
+  #     HostedZoneName: !Ref HostedZoneName
+  #     Comment: Zone apex alias targeted to ALB of Cluster.
   #     RecordSets:
-  #       - Name:
-  #           !If [
-  #             HasAlternateHostname,
-  #             !Sub '${AlternateAppHostname}.',
-  #             !Sub '${AppHostname}.',
-  #           ]
-  #         Type: A
-  #         AliasTarget:
-  #           HostedZoneId: !Ref LoadBalancerHostedZone
-  #           DNSName: !Ref LoadBalancerDnsName
+  #     - Name:
+  #         Fn::Join: ["", [!Ref HostName, ".", !Ref HostedZoneName]]
+  #       Type: A
+  #       AliasTarget:
+  #         HostedZoneId: !GetAtt PublicLoadBalancer.CanonicalHostedZoneID
+  #         DNSName: !GetAtt PublicLoadBalancer.DNSName
 
   # This is an IAM role which authorizes ECS to manage resources on your
   # account on your behalf, such as updating your load balancer with the

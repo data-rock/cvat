@@ -31,8 +31,8 @@ Resources:
     Properties:
       EvaluationPeriods: '1'
       Statistic: Minimum
-      Threshold: '15'
-      AlarmDescription: Alarm if more than 3 containers with maximum size can be scheduled
+      Threshold: '2'
+      AlarmDescription: Alarm if more than 2 containers with maximum size can be scheduled
       Period: '60'
       AlarmActions:
       - Ref: AutoScalingGroupScaleDownPolicy
@@ -47,7 +47,7 @@ Resources:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
       AdjustmentType: ChangeInCapacity
-      Cooldown: 300
+      Cooldown: 150
       AutoScalingGroupName: !Ref ECSAutoScalingGroup
       ScalingAdjustment: 1
 
@@ -109,8 +109,8 @@ Resources:
         ZipFile: !Join
           - ''
           - - |
-              CONTAINER_MAX_CPU = 256
-              CONTAINER_MAX_MEM = 512
+              CONTAINER_MAX_CPU = 512
+              CONTAINER_MAX_MEM = 992
 
               import boto3,os
               import datetime,dateutil

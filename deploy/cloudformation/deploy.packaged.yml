@@ -51,11 +51,31 @@ Parameters:
     Description: host name
     Type: String
     Default: label
+  ECSDesiredCapacity:
+    Description: desired ECS instance capacity
+    Type: Number
+    Default: 1
+  ECSMaxCapacity:
+    Description: desired ECS instance capacity
+    Type: Number
+    Default: 4
+  ECSSpotPrice:
+    Description: Spot price to bid
+    Type: Number
+    Default: 0.0292
+  ServiceDesiredCount:
+    Description: desired ECS instance capacity
+    Type: Number
+    Default: 1
+  ServiceMaxCount:
+    Description: desired ECS instance capacity
+    Type: Number
+    Default: 4
 Resources:
   CfnEcsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/4b2f05b59881f9b747f74ff7cc8e57dd.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/2af86949cbdf4b26ebda8bd24b0111b1.template
       Parameters:
         KeyPairName:
           Ref: SSHKeyPairName
@@ -67,9 +87,13 @@ Resources:
         PublicTwoCIDR: 10.0.1.0/24
         PrivateOneCIDR: 10.0.2.0/24
         PrivateTwoCIDR: 10.0.3.0/24
-        DesiredCapacity: 1
-        MaxSize: 4
+        DesiredCapacity:
+          Ref: ECSDesiredCapacity
+        MaxSize:
+          Ref: ECSMaxCapacity
         InstanceType: t2.small
+        SpotPrice:
+          Ref: ECSSpotPrice
         EFSNameTag: CvatEFSVolume
         SSLCertificateArn:
           Ref: SSLCertificateArn
@@ -146,7 +170,7 @@ Resources:
   CfnCloudWatchStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/8aaab2416b9082e18e9d6ccb06443613.template
+      TemplateURL: https://s3.amazonaws.com/datarock-cvat-cloudformation-deploy-temp/ba9c03ee636954352775a77ad12cbfef.template
       Parameters:
         ClusterName:
           Fn::GetAtt:
@@ -265,8 +289,10 @@ Resources:
           - CfnRedisStack
           - Outputs.ElastiCacheAddress
         Priority: 1
-        DesiredCount: 1
-        MaxCount: 4
+        DesiredCount:
+          Ref: ServiceDesiredCount
+        MaxCount:
+          Ref: ServiceMaxCount
         ImageUrl:
           Fn::Join:
           - ':'
@@ -275,7 +301,7 @@ Resources:
               - Outputs.CvatECRRepository
             - Ref: CvatImageTag
         ContainerCpu: 512
-        ContainerMemory: 1024
+        ContainerMemory: 992
         AllowedHosts: '*'
   CfnCvatUIStack:
     Type: AWS::CloudFormation::Stack
@@ -298,8 +324,10 @@ Resources:
           - CfnEcsStack
           - Outputs.VPCId
         Priority: 2
-        DesiredCount: 1
-        MaxCount: 4
+        DesiredCount:
+          Ref: ServiceDesiredCount
+        MaxCount:
+          Ref: ServiceMaxCount
         ImageUrl:
           Fn::Join:
           - ':'
