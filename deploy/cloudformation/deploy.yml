@@ -78,6 +78,24 @@ Parameters:
   HostUrl:
     Description: hosted url
     Type: String
+  CreateCvatApiService:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: if true deploy CvatApi service
+  CreateCvatUIService:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: if true deploy CvatApi service
+
+Conditions:
+  EnableTaskCvatApi: !Equals [!Ref CreateCvatApiService, 'true']
+  EnableTaskCvatUI: !Equals [!Ref CreateCvatUIService, 'true']
 
 Resources:
   CfnEcsStack:
@@ -191,6 +209,7 @@ Resources:
           Value: !Ref CostGroupTag
 
   CfnCvatApiStack:
+    Condition: EnableTaskCvatApi
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./nested/cfn-cvat-api.yml
@@ -214,6 +233,7 @@ Resources:
         AllowedHosts: '*'
 
   CfnCvatUIStack:
+    Condition: EnableTaskCvatUI
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./nested/cfn-cvat-ui.yml
