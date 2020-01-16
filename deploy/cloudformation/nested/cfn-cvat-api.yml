@@ -40,11 +40,13 @@ Parameters:
     Description: The username of the database
     Type: String
     Default: root
+    NoEcho: true
 
   DbPassword:
     Description: The password of the database
     Type: String
     Default: ''
+    NoEcho: true
 
   RedisHost:
     Description: The redis host
