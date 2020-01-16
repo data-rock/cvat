@@ -44,7 +44,7 @@ jobs:
           name: Deploy
           command: |
             ./deploy/bin/deploy.sh
-          no_output_timeout: 30m
+          no_output_timeout: 45m
 
   deploy_prod:
     executor: python
@@ -72,7 +72,7 @@ jobs:
           name: Deploy
           command: |
             ./deploy/bin/deploy.sh
-          no_output_timeout: 30m
+          no_output_timeout: 45m
 
 workflows:
   version: 2
