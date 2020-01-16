@@ -40,7 +40,7 @@ Resources:
         - !Ref PublicSubnetTwo
       MinSize: 0
       MaxSize: 1
-      DesiredCapacity: 1
+      DesiredCapacity: 0
 
   BastionSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
