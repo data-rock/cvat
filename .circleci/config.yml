@@ -19,6 +19,34 @@ general:
      - deploy
 
 jobs:
+  pre_deploy_prod:
+    executor: python
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: Setup production Environment Variables
+          command: |
+            echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PROD_ENV >> $BASH_ENV
+            echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PROD_ENV >> $BASH_ENV
+            echo export AWS_DEFAULT_REGION="ap-southeast-2" >> $BASH_ENV
+            echo export DEPLOY_PRODUCTION="true" >> $BASH_ENV
+      - aws-cli/install
+      - jq/install
+      - aws-cli/configure
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - run:
+          name: Deploy
+          command: |
+            ./deploy/bin/run-before-first-deploy.sh
+          no_output_timeout: 45m
+
   deploy_test:
     executor: python
 
@@ -86,6 +114,19 @@ workflows:
       - deploy_test:
           requires:
             - deploy-test-approval
+          filters:
+            branches:
+              only: deploy
+  pre_deploy_prod:
+    jobs:
+      - pre-deploy-prod-approval:
+          type: approval
+          filters:
+            branches:
+              only: deploy
+      - pre_deploy_prod:
+          requires:
+            - pre-deploy-prod-approval
           filters:
             branches:
               only: deploy
