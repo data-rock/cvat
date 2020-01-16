@@ -635,19 +635,18 @@ Resources:
       Port: 8080
       Protocol: HTTP
 
-  # WIP: wait DNS zone to be transferred
-  # ClusterDNSRecord:
-  #   Type: AWS::Route53::RecordSetGroup
-  #   Properties:
-  #     HostedZoneName: !Ref HostedZoneName
-  #     Comment: Zone apex alias targeted to ALB of Cluster.
-  #     RecordSets:
-  #     - Name:
-  #         Fn::Join: ["", [!Ref HostName, ".", !Ref HostedZoneName]]
-  #       Type: A
-  #       AliasTarget:
-  #         HostedZoneId: !GetAtt PublicLoadBalancer.CanonicalHostedZoneID
-  #         DNSName: !GetAtt PublicLoadBalancer.DNSName
+  ClusterDNSRecord:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: !Ref HostedZoneName
+      Comment: Zone apex alias targeted to ALB of Cluster.
+      RecordSets:
+      - Name:
+          Fn::Join: ["", [!Ref HostName, ".", !Ref HostedZoneName]]
+        Type: A
+        AliasTarget:
+          HostedZoneId: !GetAtt PublicLoadBalancer.CanonicalHostedZoneID
+          DNSName: !GetAtt PublicLoadBalancer.DNSName
 
   # This is an IAM role which authorizes ECS to manage resources on your
   # account on your behalf, such as updating your load balancer with the

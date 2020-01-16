@@ -23,7 +23,7 @@ Parameters:
     Type: String
     Description: The Id for the Vpc used for deployment
 
-  ExternalUrl:
+  HostUrl:
     Type: String
     Description: Public EBL url
 
@@ -149,7 +149,7 @@ Resources:
             - Name: UI_SCHEME
               Value: https
             - Name: UI_HOST
-              Value: !Ref 'ExternalUrl'
+              Value: !Ref 'HostUrl'
             - Name: UI_PORT
               Value: 443
             - Name: DB_HOST
@@ -278,6 +278,6 @@ Resources:
 Outputs:
   CvatApiUrl:
     Description: The url of the external load balancer
-    Value: !Join ['',[ !Ref 'ExternalUrl', '8080']]
+    Value: !Join ['',[ !Ref 'HostUrl', '8080']]
     Export:
       Name: !Join [ ':', [ !Ref 'AWS::StackName', 'CvatApiUrl' ] ]

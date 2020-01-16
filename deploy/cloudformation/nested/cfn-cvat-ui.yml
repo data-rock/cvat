@@ -23,7 +23,7 @@ Parameters:
     Type: String
     Description: The Id for the Vpc used for deployment
 
-  ExternalUrl:
+  HostUrl:
     Type: String
     Description: Public EBL url
 
@@ -92,7 +92,7 @@ Resources:
             - Name: REACT_APP_API_PROTOCOL
               Value: https
             - Name: REACT_APP_API_HOST
-              Value: !Ref 'ExternalUrl'
+              Value: !Ref 'HostUrl'
             - Name: REACT_APP_API_PORT
               Value: 8443
 
@@ -188,6 +188,6 @@ Resources:
 Outputs:
   CvatUIUrl:
     Description: The url of the external load balancer
-    Value: !Ref 'ExternalUrl'
+    Value: !Ref 'HostUrl'
     Export:
       Name: !Join [ ':', [ !Ref 'AWS::StackName', 'CvatUIUrl' ] ]

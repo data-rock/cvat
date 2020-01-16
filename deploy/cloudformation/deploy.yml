@@ -72,6 +72,12 @@ Parameters:
     Description: desired ECS instance capacity
     Type: Number
     Default: 4
+  HostedZoneName:
+    Description: hosted zone
+    Type: String
+  HostUrl:
+    Description: hosted url
+    Type: String
 
 Resources:
   CfnEcsStack:
@@ -94,6 +100,7 @@ Resources:
         EFSNameTag: CvatEFSVolume
         SSLCertificateArn:  !Ref SSLCertificateArn
         HostName: !Ref HostName
+        HostedZoneName: !Ref HostedZoneName
       Tags:
         - Key: CostGroup
           Value: !Ref CostGroupTag
@@ -191,7 +198,7 @@ Resources:
         ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
         ServiceName: Cvat-app
         PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicAPILoadBalancerListener]
-        ExternalUrl: !Sub "${HostName}.${DomainName}"
+        HostUrl: !Ref HostUrl
         VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
         DbHost: !GetAtt [CfnRdsStack, Outputs.DbEndpoint]
         DbName: !Ref DbName
@@ -214,7 +221,7 @@ Resources:
         ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
         ServiceName: Cvat-ui
         PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicLoadBalancerListener]
-        ExternalUrl: !Sub "${HostName}.${DomainName}"
+        HostUrl: !Ref HostUrl
         VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
         Priority: 2
         DesiredCount: !Ref ServiceDesiredCount

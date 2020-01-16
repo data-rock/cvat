@@ -1,15 +1,17 @@
 {
   "Parameters": {
     "ServiceName": "Cvat-test",
-    "SSLCertificateArn": "arn:aws:acm:ap-southeast-2:980755931163:certificate/2b1200bc-34fc-44c9-9dc3-5ee5c3475a01",
+    "SSLCertificateArn": "arn:aws:acm:ap-southeast-2:980755931163:certificate/2eea4b14-0be4-490a-b8e2-0d779d4ff359",
     "CostGroupTag": "Cvat-test",
     "SSHKeyPairName": "ecs-keypair",
     "CvatECRRepositoryName": "datarock/cvat",
     "CvatUIECRRepositoryName": "datarock/cvat_ui",
-    "HostName": "label-test",
     "ECSDesiredCapacity": "1",
     "ECSMaxCapacity": "5",
     "ServiceDesiredCount": "1",
-    "ServiceMaxCount": "5"
+    "ServiceMaxCount": "5",
+    "HostUrl": "label-test.datarock.com.au",
+    "HostName": "label",
+    "HostedZoneName": "test.datarock.com.au."
   }
 }
