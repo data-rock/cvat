@@ -48,6 +48,8 @@ aws cloudformation deploy --no-fail-on-empty-changeset \
     --parameter-overrides \
       CvatImageTag="$GIT_COMMIT_HASH" \
       $PARAMETER_OVERRIDES \
+      CreateCvatApiService=true \
+      CreateCvatUIService=true \
     --stack-name "$STACK_NAME" \
     --capabilities CAPABILITY_IAM \
     --capabilities CAPABILITY_NAMED_IAM \
