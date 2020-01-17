@@ -54,3 +54,8 @@ You can find the credentials in AWS Parameter Store
 ```
 deploy/bin/deploy.sh
 ```
+### Admin panel
+For Production goto
+  - https://label.datarock.com.au:8443/admin
+For Test goto
+  - https://label-test.datarock.com.au:8443/admin
