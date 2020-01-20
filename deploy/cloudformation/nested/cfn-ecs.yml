@@ -427,7 +427,6 @@ Resources:
             - EFS_FILE_SYSTEM_ID=
             - !Ref 'FileSystem'
             - "\n"
-            - "sudo chmod 777 -R /mnt/efs\n"
             - "DIR_SRC=$EC2_AVAIL_ZONE.$EFS_FILE_SYSTEM_ID.efs.$EC2_REGION.amazonaws.com\n"
             - "DIR_TGT=/mnt/efs\n"
             - "touch /home/ec2-user/echo.res\n"
@@ -440,6 +439,8 @@ Resources:
             - "cp -p /etc/fstab /etc/fstab.back-$(date +%F)\n"
             - "echo -e \"$DIR_SRC:/ \t\t $DIR_TGT \t\t nfs \t\t defaults \t\t 0 \t\
               \t 0\" | tee -a /etc/fstab\n"
+            - "sudo chmod 777 -R /mnt/efs\n"
+            - "sudo chmod 777 -R /mnt/efs/*\n"
             - "docker ps\n"
             - "service docker stop\n"
             - "service docker start\n"

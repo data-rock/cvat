@@ -63,8 +63,12 @@ Parameters:
   ECSSpotPrice:
     Description: Spot price to bid
     Type: Number
-    Default: 0.0292
-  ServiceDesiredCount:
+    Default: 0.0584
+  APIServiceDesiredCount:
+    Description: desired ECS instance capacity
+    Type: Number
+    Default: 1
+  UIServiceDesiredCount:
     Description: desired ECS instance capacity
     Type: Number
     Default: 1
@@ -113,7 +117,7 @@ Resources:
         PrivateTwoCIDR: '10.0.3.0/24'
         DesiredCapacity: !Ref ECSDesiredCapacity
         MaxSize: !Ref ECSMaxCapacity
-        InstanceType: t2.small
+        InstanceType: t2.medium
         SpotPrice: !Ref ECSSpotPrice
         EFSNameTag: CvatEFSVolume
         SSLCertificateArn:  !Ref SSLCertificateArn
@@ -225,11 +229,11 @@ Resources:
         DbPassword: !Ref 'DbPassword'
         RedisHost: !GetAtt [CfnRedisStack, Outputs.ElastiCacheAddress]
         Priority: 1
-        DesiredCount: !Ref ServiceDesiredCount
+        DesiredCount: !Ref APIServiceDesiredCount
         MaxCount: !Ref ServiceMaxCount
         ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
-        ContainerCpu: 512
-        ContainerMemory: 992
+        ContainerCpu: 1024
+        ContainerMemory: 1920
         AllowedHosts: '*'
 
   CfnCvatUIStack:
@@ -244,7 +248,7 @@ Resources:
         HostUrl: !Ref HostUrl
         VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
         Priority: 2
-        DesiredCount: !Ref ServiceDesiredCount
+        DesiredCount: !Ref UIServiceDesiredCount
         MaxCount: !Ref ServiceMaxCount
         ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatUIECRRepository], !Ref 'CvatImageTag' ] ]
         ContainerCpu: 256

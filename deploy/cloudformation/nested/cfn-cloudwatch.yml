@@ -109,8 +109,8 @@ Resources:
         ZipFile: !Join
           - ''
           - - |
-              CONTAINER_MAX_CPU = 512
-              CONTAINER_MAX_MEM = 992
+              CONTAINER_MAX_CPU = 1024
+              CONTAINER_MAX_MEM = 1536
 
               import boto3,os
               import datetime,dateutil
