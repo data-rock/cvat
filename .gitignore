@@ -7,7 +7,7 @@
 /.env
 /keys
 /logs
-/components/openvino/*.tgz
+# /components/openvino/*.tgz
 /profiles
 /ssh/*
 !/ssh/README.md
