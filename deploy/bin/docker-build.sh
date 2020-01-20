@@ -21,7 +21,8 @@ docker build -t "$CVAT_IMAGE" \
              --build-arg DJANGO_CONFIGURATION="production" \
              --build-arg WITH_TESTS="no" \
              --build-arg TZ="Etc/UTC" \
-             --build-arg OPENVINO_TOOLKIT="no" \
+             --build-arg OPENVINO_TOOLKIT="yes" \
+             --build-arg WITH_DEXTR="yes" \
              .
 # build CVAT_UI_IMAGE
 echo "🌳 Building Dockerfile for $CVAT_UI_IMAGE:$GIT_COMMIT_HASH"
