@@ -57,9 +57,11 @@ You can find the credentials in AWS Parameter Store
       sudo chmod 777 -R /mnt/efs/*/*
       ```
 ### How to deploy
-```
-deploy/bin/deploy.sh
-```
+  ```
+  deploy/bin/deploy.sh
+  ```
+  Or, go to `CircleCI` [Pipelines](https://app.circleci.com/github/data-rock/cvat/pipelines) to deploy to the correct environment
+
 ### Admin panel
 For Production goto
   - https://label.datarock.com.au:8443/admin
