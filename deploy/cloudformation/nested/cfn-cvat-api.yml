@@ -170,6 +170,7 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      RetentionInDays: 14
       LogGroupName: !Join ['', [/ecs/, !Ref ServiceName, TaskDefinition]]
 
   # The service. The service is a resource which allows you to run multiple

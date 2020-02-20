@@ -99,6 +99,13 @@ Resources:
       Principal: 'events.amazonaws.com'
       SourceArn: !GetAtt 'SchedulableContainersCron.Arn'
 
+  LambdaFunctionLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    DependsOn: "LambdaHandlerFunction"
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Join ["", ["/aws/lambda/", !Ref LambdaHandlerFunction]]
+
   LambdaHandlerFunction:
     Type: 'AWS::Lambda::Function'
     Properties:

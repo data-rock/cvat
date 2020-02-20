@@ -90,6 +90,12 @@ Resources:
       Action: 'lambda:InvokeFunction'
       Principal: sns.amazonaws.com
       SourceArn: !Ref NotificationTopic
+  LambdaFunctionLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    DependsOn: "LifecycleHandlerFunction"
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Join ["", ["/aws/lambda/", !Ref LifecycleHandlerFunction]]
   LifecycleHandlerFunction:
     Type: 'AWS::Lambda::Function'
     Properties:

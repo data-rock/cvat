@@ -66,9 +66,6 @@ Resources:
      MasterUserPassword: !Ref DbMasterPassword
      VPCSecurityGroups:
        - !GetAtt VpcSecurityGroup.GroupId
-     EnableCloudwatchLogsExports:
-       - postgresql
-       - upgrade
 Outputs:
  DbEndpoint:
    Description: The database connection endpoint
