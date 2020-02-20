@@ -109,6 +109,7 @@ Resources:
   LambdaHandlerFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
+      FunctionName: clusterResource
       Environment:
         Variables:
           CLUSTER: !Ref ClusterName

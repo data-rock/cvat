@@ -92,13 +92,13 @@ Resources:
       SourceArn: !Ref NotificationTopic
   LambdaFunctionLogGroup:
     Type: "AWS::Logs::LogGroup"
-    DependsOn: "LifecycleHandlerFunction"
     Properties:
       RetentionInDays: 14
       LogGroupName: !Join ["", ["/aws/lambda/", !Ref LifecycleHandlerFunction]]
   LifecycleHandlerFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
+      FunctionName: EcsLifecycle
       Environment:
         Variables:
           CLUSTER: !Ref ClusterName
