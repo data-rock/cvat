@@ -1,5 +1,6 @@
 ### What is this for
 This is cloudformation to deploy the CVAT labeling tool into ECS
+
 Apart from the normal ECS, it also creates the following AWS resources:
   - RDS(`Postgres`)
   - Elasticache(`Redis`)
@@ -14,8 +15,11 @@ Stack names:
 
 ### Why not fargate
 The app requires shared folders to store the image. By the time we build the solution, AWS hadn't released
+
 the support the EFS in Fargate. However, as of 18th Jan 2020, they released the preview support of EFS in
+
 Fargate(https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_EFSVolumeConfiguration.html)
+
 We should consider move to Fargate when this feature is released.
 
 ### Architect diagram
@@ -60,7 +64,9 @@ You can find the credentials in AWS Parameter Store
   ```
   deploy/bin/deploy.sh
   ```
-  Or, go to `CircleCI` [Pipelines](https://app.circleci.com/github/data-rock/cvat/pipelines) to deploy to the correct environment
+  Or, go to `CircleCI` [Pipelines](https://app.circleci.com/github/data-rock/cvat/pipelines) to deploy to the
+
+  correct environment
 
 ### Admin panel
 For Production goto
