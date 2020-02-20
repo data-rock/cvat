@@ -137,8 +137,8 @@ Resources:
           MountPoints:
             - ContainerPath: /home/django/data
               SourceVolume: efs-cvat-data
-            - ContainerPath: /home/django/keys
-              SourceVolume: efs-cvat-keys
+            # - ContainerPath: /home/django/keys
+            #   SourceVolume: efs-cvat-keys
             # - ContainerPath: /home/django/logs
             #   SourceVolume: efs-cvat-logs
             - ContainerPath: /home/django/models
