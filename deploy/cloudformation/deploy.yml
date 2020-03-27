@@ -232,8 +232,8 @@ Resources:
         DesiredCount: !Ref APIServiceDesiredCount
         MaxCount: !Ref ServiceMaxCount
         ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
-        ContainerCpu: 1024
-        ContainerMemory: 1920
+        ContainerCpu: 1792
+        ContainerMemory: 3328
         AllowedHosts: '*'
 
   CfnCvatUIStack:
