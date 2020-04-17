@@ -20,7 +20,7 @@ general:
 
 jobs:
   # This part used for deply preparation only
-  # pre_deploy_prod:
+  # pre_deploy-prod:
   #   executor: python
 
   #   working_directory: ~/repo
@@ -34,7 +34,7 @@ jobs:
   #           echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PROD_ENV >> $BASH_ENV
   #           echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PROD_ENV >> $BASH_ENV
   #           echo export AWS_DEFAULT_REGION="ap-southeast-2" >> $BASH_ENV
-  #           echo export DEPLOY_PRODUCTION="true" >> $BASH_ENV
+  #           echo export DEPLOY-PRODUCTION="true" >> $BASH_ENV
   #     - aws-cli/install
   #     - jq/install
   #     - aws-cli/configure
@@ -47,8 +47,62 @@ jobs:
   #         command: |
   #           ./deploy/bin/run-before-first-deploy.sh
   #         no_output_timeout: 45m
+  build-test-image:
+    executor: python
 
-  deploy_test:
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: Setup test Environment Variables
+          command: |
+            echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_TEST_ENV >> $BASH_ENV
+            echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_TEST_ENV >> $BASH_ENV
+            echo export AWS_DEFAULT_REGION="ap-southeast-2" >> $BASH_ENV
+      - aws-cli/install
+      - jq/install
+      - aws-cli/configure
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - run:
+          name: Deploy
+          command: |
+            ./deploy/bin/docker-build.sh
+          no_output_timeout: 45m
+
+  build-prod-image:
+    executor: python
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: Setup prod Environment Variables
+          command: |
+            echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PROD_ENV >> $BASH_ENV
+            echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PROD_ENV >> $BASH_ENV
+            echo export AWS_DEFAULT_REGION="ap-southeast-2" >> $BASH_ENV
+            echo export DEPLOY-PRODUCTION="true" >> $BASH_ENV
+      - aws-cli/install
+      - jq/install
+      - aws-cli/configure
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - run:
+          name: Deploy
+          command: |
+            ./deploy/bin/docker-build.sh
+          no_output_timeout: 45m
+
+  deploy-test:
     executor: python
 
     working_directory: ~/repo
@@ -75,7 +129,7 @@ jobs:
             ./deploy/bin/deploy.sh
           no_output_timeout: 45m
 
-  deploy_prod:
+  deploy-prod:
     executor: python
 
     working_directory: ~/repo
@@ -89,7 +143,7 @@ jobs:
             echo export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_PROD_ENV >> $BASH_ENV
             echo export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_PROD_ENV >> $BASH_ENV
             echo export AWS_DEFAULT_REGION="ap-southeast-2" >> $BASH_ENV
-            echo export DEPLOY_PRODUCTION="true" >> $BASH_ENV
+            echo export DEPLOY-PRODUCTION="true" >> $BASH_ENV
       - aws-cli/install
       - jq/install
       - aws-cli/configure
@@ -105,42 +159,64 @@ jobs:
 
 workflows:
   version: 2
-  deploy_test:
+  deploy-test:
     jobs:
+      - build-test-image-approval:
+          type: approval
+          filters:
+            branches:
+              only: deploy
+      - build-test-image:
+          requires:
+            - build-test-image-approval
+          filters:
+            branches:
+              only: deploy
       - deploy-test-approval:
           type: approval
           filters:
             branches:
               only: deploy
-      - deploy_test:
+      - deploy-test:
           requires:
             - deploy-test-approval
           filters:
             branches:
               only: deploy
   # This part used for deply preparation only
-  # pre_deploy_prod:
+  # pre_deploy-prod:
   #   jobs:
   #     - pre-deploy-prod-approval:
   #         type: approval
   #         filters:
   #           branches:
   #             only: deploy
-  #     - pre_deploy_prod:
+  #     - pre_deploy-prod:
   #         requires:
   #           - pre-deploy-prod-approval
   #         filters:
   #           branches:
   #             only: deploy
 
-  deploy_prod:
+  deploy-prod:
     jobs:
+      - build-prod-image-approval:
+          type: approval
+          filters:
+            branches:
+              only: deploy
+      - build-prod-image:
+          requires:
+            - build-prod-image-approval
+          filters:
+            branches:
+              only: deploy
       - deploy-prod-approval:
           type: approval
           filters:
             branches:
               only: deploy
-      - deploy_prod:
+      - deploy-prod:
           requires:
             - deploy-prod-approval
           filters:

@@ -1,10 +1,6 @@
 #!/bin/bash -eu
 CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)" # Figure out where the script is running
 
-# run semver-from-git.sh
-GIT_COMMIT_HASH=$(git rev-parse --short HEAD)
-
-export GIT_COMMIT_HASH=$GIT_COMMIT_HASH
 export STACK_PREFIX="cvat"
 export AWS_DEFAULT_REGION=ap-southeast-2
 export CVAT_IMAGE="datarock/cvat"
