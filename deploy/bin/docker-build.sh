@@ -2,8 +2,8 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 . "$SCRIPT_DIR"/robust-bash.sh
+. "$SCRIPT_DIR"/config.sh
 
-require_env_var GIT_COMMIT_HASH
 require_env_var AWS_ACCOUNT
 require_env_var CVAT_IMAGE
 require_env_var CVAT_UI_IMAGE
