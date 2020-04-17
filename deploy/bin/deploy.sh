@@ -4,9 +4,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)" # Figure out where the 
 . "$SCRIPT_DIR"/robust-bash.sh
 . "$SCRIPT_DIR"/config.sh
 
+# build, tag and push the images
+"$SCRIPT_DIR"/docker-build.sh
+
 # make sure aws cli is installed
 require_binary aws
 
+require_env_var GIT_COMMIT_HASH
 require_env_var CLOUDFORMATION_TEMP_BUCKET_NAME
 
 # Determine the stack name
@@ -42,6 +46,7 @@ echo "🌳 Deploying $STACK_NAME"
 aws cloudformation deploy --no-fail-on-empty-changeset \
     --template-file "$PACKAGED_TEMPLATE_FILE" \
     --parameter-overrides \
+      CvatImageTag="$GIT_COMMIT_HASH" \
       $PARAMETER_OVERRIDES \
       CreateCvatApiService=true \
       CreateCvatUIService=true \
