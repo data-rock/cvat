@@ -89,12 +89,8 @@ Resources:
           PortMappings:
             - ContainerPort: 80
           Environment:
-            - Name: REACT_APP_API_PROTOCOL
-              Value: https
-            - Name: REACT_APP_API_HOST
-              Value: !Ref 'HostUrl'
-            - Name: REACT_APP_API_PORT
-              Value: 8443
+            - Name: REACT_APP_API_URL
+              Value: !Join ['', ['https://', !Ref 'HostUrl', ':8443']]
 
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
