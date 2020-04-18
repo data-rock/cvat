@@ -30,7 +30,7 @@ Parameters:
     Description: EcsHostSecurityGroup
 
 Resources:
-  RdsSubnetGroup:
+  RDSSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: !Ref AWS::StackName
@@ -58,8 +58,8 @@ Resources:
      AllocatedStorage: 5
      DBName: !Ref DbName
      DBInstanceClass: !Ref DbInstanceClass
-     DBInstanceIdentifier: !Ref DbName
-     DBSubnetGroupName: !Ref RdsSubnetGroup
+     DBInstanceIdentifier: !Join ['', [!Ref DbName, RDS]]
+     DBSubnetGroupName: !Ref RDSSubnetGroup
      Engine: postgres
      EngineVersion: '11.2'
      MasterUsername: !Ref DbMasterUser

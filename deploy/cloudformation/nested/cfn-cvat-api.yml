@@ -10,6 +10,17 @@ Parameters:
     Default: cvat
     Description: A name for the service
 
+  PrivateSubnetOne:
+    Type: String
+  PrivateSubnetTwo:
+    Type: String
+  EcsHostSecurityGroup:
+    Type: String
+    Description: EcsHostSecurityGroup
+  FileSystem:
+    Type: String
+    Description: FileSystemId
+
   ImageUrl:
     Type: String
     Default: 980755931163.dkr.ecr.ap-southeast-2.amazonaws.com/datarock/cvat:latest
@@ -54,11 +65,11 @@ Parameters:
 
   ContainerCpu:
     Type: Number
-    Default: 256
+    Default: 2048
     Description: How much CPU to give the container. 1024 is 1 CPU
   ContainerMemory:
     Type: Number
-    Default: 512
+    Default: 8192
     Description: How much memory in megabytes to give the container
 
   Path:
@@ -102,27 +113,30 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Ref 'ServiceName'
+      Family: !Join ['-', [!Ref ServiceName, TaskDefinition]]
       Cpu: !Ref ContainerCpu
       Memory: !Ref ContainerMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
       TaskRoleArn:
         Fn::If:
           - 'HasCustomRole'
           - !Ref 'Role'
           - !Ref "AWS::NoValue"
-      Volumes:
-        - Host:
-            SourcePath: /mnt/efs/cvat/data
-          Name: efs-cvat-data
-        - Host:
-            SourcePath: /mnt/efs/cvat/keys
-          Name: efs-cvat-keys
-        - Host:
-            SourcePath: /mnt/efs/cvat/logs
-          Name: efs-cvat-logs
-        - Host:
-            SourcePath: /mnt/efs/cvat/models
-          Name: efs-cvat-models
+      ExecutionRoleArn: !Ref ExecutionRole
+      # below volumes need to be injected manually by update the task definition from the console
+      # as CFN has yet to support this as of 18/04/2020
+      # follow the instructions here https://docs.aws.amazon.com/AmazonECS/latest/developerguide/efs-volumes.html
+      # Volumes:
+      #   - efsVolumeConfiguration:
+      #       fileSystemId: !Ref FileSystem
+      #       rootDirectory: /mnt/efs/cvat/data
+      #     name: efs-cvat-data
+      #   - efsVolumeConfiguration:
+      #       fileSystemId: !Ref FileSystem
+      #       rootDirectory: /mnt/efs/cvat/models
+      #     name: efs-cvat-models
       ContainerDefinitions:
         - Name: !Ref 'ServiceName'
           Cpu: !Ref 'ContainerCpu'
@@ -134,20 +148,20 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-group: !Ref LogGroup
               awslogs-stream-prefix: ecs
-          MountPoints:
-            - ContainerPath: /home/django/data
-              SourceVolume: efs-cvat-data
-            # - ContainerPath: /home/django/keys
-            #   SourceVolume: efs-cvat-keys
-            # - ContainerPath: /home/django/logs
-            #   SourceVolume: efs-cvat-logs
-            - ContainerPath: /home/django/models
-              SourceVolume: efs-cvat-models
+          # below volumes need to be injected manually by update the task definition from the console
+          # as CFN has yet to support this as of 18/04/2020
+          # follow the instructions here https://docs.aws.amazon.com/AmazonECS/latest/developerguide/efs-volumes.html
+          # MountPoints:
+          #   - ContainerPath: /home/django/data
+          #     SourceVolume: efs-cvat-data
+          #   - ContainerPath: /home/django/models
+          #     SourceVolume: efs-cvat-models
           PortMappings:
             - ContainerPort: 8080
+              HostPort: 8080
           Environment:
             - Name: DJANGO_MODWSGI_EXTRA_ARGS
-              Value: ''
+              Value: " "
             - Name: UI_SCHEME
               Value: https
             - Name: UI_HOST
@@ -166,12 +180,34 @@ Resources:
               Value: !Ref 'RedisHost'
             - Name: ALLOWED_HOSTS
               Value: !Ref 'AllowedHosts'
+          # Interactive: true
+          # Send logs to CloudWatch Logs
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
 
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
       LogGroupName: !Join ['', [/ecs/, !Ref ServiceName, TaskDefinition]]
+
+  # A role needed by ECS
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['', [!Ref ServiceName, ExecutionRole]]
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
 
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
@@ -181,12 +217,23 @@ Resources:
     DependsOn: LoadBalancerRule
     Properties:
       ServiceName: !Ref 'ServiceName'
+      PlatformVersion: '1.4.0'
       Cluster: !Ref 'ClusterName'
-      DeploymentConfiguration:
-        MaximumPercent: 300
-        MinimumHealthyPercent: 50
-      DesiredCount: !Ref 'DesiredCount'
       TaskDefinition: !Ref 'TaskDefinition'
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: !Ref 'DesiredCount'
+      HealthCheckGracePeriodSeconds: 150
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !Ref PrivateSubnetOne
+            - !Ref PrivateSubnetTwo
+          SecurityGroups:
+            - !Ref EcsHostSecurityGroup
       LoadBalancers:
         - ContainerName: !Ref 'ServiceName'
           ContainerPort: 8080
@@ -228,7 +275,7 @@ Resources:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
         ScaleInCooldown: 60
         ScaleOutCooldown: 60
-        TargetValue: 70
+        TargetValue: 80
 
   AutoScalingPolicyMemory:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
@@ -252,16 +299,17 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckIntervalSeconds: 6
+      HealthCheckIntervalSeconds: 10
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
+      HealthCheckTimeoutSeconds: 8
       HealthyThresholdCount: 2
       Name: !Ref 'ServiceName'
       Port: 8080
       Protocol: HTTP
-      UnhealthyThresholdCount: 3
+      UnhealthyThresholdCount: 5
       VpcId: !Ref VpcId
+      TargetType: ip
       Matcher:
         HttpCode: '200-399'
 

@@ -6,13 +6,16 @@
     "SSHKeyPairName": "ecs-keypair",
     "CvatECRRepositoryName": "datarock/cvat",
     "CvatUIECRRepositoryName": "datarock/cvat_ui",
-    "ECSDesiredCapacity": "1",
-    "ECSMaxCapacity": "5",
-    "APIServiceDesiredCount": "2",
+    "APIServiceDesiredCount": "1",
     "UIServiceDesiredCount": "1",
     "ServiceMaxCount": "5",
     "HostUrl": "label-test.datarock.com.au",
     "HostName": "label",
-    "HostedZoneName": "test.datarock.com.au."
+    "HostedZoneName": "test.datarock.com.au.",
+    "VpcId": "vpc-02311d65",
+    "PrivateSubnetOne": "subnet-290e1a4e",
+    "PrivateSubnetTwo": "subnet-d877f080",
+    "PublicSubnetOnw": "subnet-09726019e5ffaffc7",
+    "PublicSubnetTwo": "subnet-04a66456615238488"
   }
 }

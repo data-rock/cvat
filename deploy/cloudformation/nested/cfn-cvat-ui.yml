@@ -10,6 +10,14 @@ Parameters:
     Default: cvat-ui
     Description: A name for the service
 
+  PrivateSubnetOne:
+    Type: String
+  PrivateSubnetTwo:
+    Type: String
+  EcsHostSecurityGroup:
+    Type: String
+    Description: EcsHostSecurityGroup
+
   ImageUrl:
     Type: String
     Default: 980755931163.dkr.ecr.ap-southeast-2.amazonaws.com/datarock/cvat_ui:latest
@@ -73,14 +81,18 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Ref 'ServiceName'
+      Family: !Join ['-', [!Ref ServiceName, TaskDefinition]]
       Cpu: !Ref ContainerCpu
       Memory: !Ref ContainerMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
       TaskRoleArn:
         Fn::If:
           - 'HasCustomRole'
           - !Ref 'Role'
           - !Ref "AWS::NoValue"
+      ExecutionRoleArn: !Ref ExecutionRole
       ContainerDefinitions:
         - Name: !Ref 'ServiceName'
           Cpu: !Ref 'ContainerCpu'
@@ -88,9 +100,37 @@ Resources:
           Image: !Ref 'ImageUrl'
           PortMappings:
             - ContainerPort: 80
+              HostPort: 80
           Environment:
             - Name: REACT_APP_API_URL
               Value: !Join ['', ['https://', !Ref 'HostUrl', ':8443']]
+          # Interactive: true
+          # Send logs to CloudWatch Logs
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Join ['', [/ecs/, !Ref ServiceName, TaskDefinition]]
+
+  # A role needed by ECS
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['', [!Ref ServiceName, ExecutionRole]]
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
 
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
@@ -100,12 +140,23 @@ Resources:
     DependsOn: LoadBalancerRule
     Properties:
       ServiceName: !Ref 'ServiceName'
+      PlatformVersion: '1.4.0'
       Cluster: !Ref 'ClusterName'
       DeploymentConfiguration:
-        MaximumPercent: 300
-        MinimumHealthyPercent: 50
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      HealthCheckGracePeriodSeconds: 30
+      LaunchType: FARGATE
       DesiredCount: !Ref 'DesiredCount'
       TaskDefinition: !Ref 'TaskDefinition'
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !Ref PrivateSubnetOne
+            - !Ref PrivateSubnetTwo
+          SecurityGroups:
+            - !Ref EcsHostSecurityGroup
       LoadBalancers:
         - ContainerName: !Ref 'ServiceName'
           ContainerPort: 80
@@ -157,7 +208,7 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckIntervalSeconds: 6
+      HealthCheckIntervalSeconds: 10
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
@@ -166,6 +217,7 @@ Resources:
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 3
+      TargetType: ip
       VpcId: !Ref VpcId
 
   # Create a rule on the load balancer for routing traffic to the target group
