@@ -28,9 +28,7 @@ docker build -t "$CVAT_IMAGE" \
 echo "🌳 Building Dockerfile for $CVAT_UI_IMAGE:$GIT_COMMIT_HASH"
 docker build -t "$CVAT_UI_IMAGE" \
              -f Dockerfile.ui \
-             --build-arg REACT_APP_API_PROTOCOL="https" \
-             --build-arg REACT_APP_API_HOST=$CVAT_DOMAIN_NAME \
-             --build-arg REACT_APP_API_PORT="8443" \
+             --build-arg REACT_APP_API_URL="https://$CVAT_DOMAIN_NAME:8443" \
              .
 
 echo "🌳 Logging in to docker"
