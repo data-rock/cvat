@@ -8,7 +8,7 @@
     "CvatUIECRRepositoryName": "datarock/cvat_ui",
     "ECSDesiredCapacity": "1",
     "ECSMaxCapacity": "5",
-    "APIServiceDesiredCount": "2",
+    "APIServiceDesiredCount": "1",
     "UIServiceDesiredCount": "1",
     "ServiceMaxCount": "5",
     "HostUrl": "label.datarock.com.au",
