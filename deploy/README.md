@@ -6,7 +6,6 @@ Apart from the normal ECS, it also creates the following AWS resources:
   - Elasticache(`Redis`)
   - EFS
   - ECR
-  - A bastion instance
   - Cloudwatch for ECS ASGs
 
 Stack names:
@@ -47,19 +46,7 @@ You can find the credentials in AWS Parameter Store
     deploy/bin/run-before-first-deploy.sh
     ```
   - Change the EFS permissions
-    EFS is automatically mapped to all the ECS instances. However, we may have to make it readable/writable for all users.
-    - SSH to the `bastion` instance.
-      You can find the bastion ASG(named: `...CfnBastionStack...`) in AWS console Auto Scaling Groups.
-      Modify the `Desired Capacity` to 1 will initialise the instance. The keypairs are:
-        - `ecs-prod-keypair` for production
-        - `ecs-keypair` for test
-    - From `bastion`, SSH to the Container Instance with the same keypair
-    - In the Container instance, run the following command to change the mounted efs folder access rights
-      ```
-      sudo chmod 777 -R /mnt/efs
-      sudo chmod 777 -R /mnt/efs/*
-      sudo chmod 777 -R /mnt/efs/*/*
-      ```
+
 ### How to deploy
   ```
   deploy/bin/deploy.sh
@@ -70,6 +57,12 @@ You can find the credentials in AWS Parameter Store
 
 ### Admin panel
 For Production goto
-  - https://label.datarock.com.au:8443/admin
+  - https://label-api.prod.datarock.com.au/admin
 For Test goto
-  - https://label-test.datarock.com.au:8443/admin
+  - https://label-api.test.datarock.com.au/admin
+
+### API
+For Production goto
+  - https://label-api.prod.datarock.com.au/api/swagger
+For Test goto
+  - https://label-api.test.datarock.com.au/api/swagger
