@@ -10,7 +10,7 @@
     "ECSMaxCapacity": "5",
     "ApiCpu": "1792",
     "ApiMemory": "3328",
-    "UiCpu": "512",
+    "UiCpu": "256",
     "UiMemory": "568",
     "APIServiceDesiredCount": "1",
     "UIServiceDesiredCount": "1",
