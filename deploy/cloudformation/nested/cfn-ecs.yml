@@ -53,22 +53,20 @@ Parameters:
     Default: 0.12
   VpcId:
     Type: String
-    Default: vpc-02311d65
   PrivateSubnetOne:
     Type: String
-    Default: subnet-290e1a4e
   PrivateSubnetTwo:
     Type: String
-    Default: subnet-d877f080
+  PrivateSubnetThree:
+    Type: String
   PublicSubnetOne:
     Type: String
-    Default: subnet-09726019e5ffaffc7
   PublicSubnetTwo:
     Type: String
-    Default: subnet-04a66456615238488
+  PublicSubnetThree:
+    Type: String
   BastionSecurityGroup:
     Type: String
-    Default: sg-0b0845c59ba4dd862
 
 Mappings:
   AWSRegionToAMI:
@@ -134,6 +132,13 @@ Resources:
       SubnetId: !Ref 'PrivateSubnetTwo'
       SecurityGroups:
         - !Ref 'MountTargetSecurityGroup'
+  MountTargetThree:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref 'FileSystem'
+      SubnetId: !Ref 'PrivateSubnetThree'
+      SecurityGroups:
+        - !Ref 'MountTargetSecurityGroup'
 
   # A security group for the EC2 hosts that will run the containers.
   # Two rules, allowing network traffic from a public facing load
@@ -171,10 +176,25 @@ Resources:
     DependsOn:
       - MountTargetOne
       - MountTargetTwo
+      - MountTargetThree
     Properties:
+      AvailabilityZones:
+        - !Select
+          - '0'
+          - !GetAZs
+            Ref: AWS::Region
+        - !Select
+          - '1'
+          - !GetAZs
+            Ref: AWS::Region
+        - !Select
+          - '2'
+          - !GetAZs
+            Ref: AWS::Region
       VPCZoneIdentifier:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       LaunchConfigurationName: !Ref 'ContainerInstances'
       MinSize: '0'
       MaxSize: !Ref 'MaxSize'
@@ -392,6 +412,7 @@ Resources:
         # from the internet can reach the load balancer directly via the internet gateway
         - !Ref PublicSubnetOne
         - !Ref PublicSubnetTwo
+        - !Ref PublicSubnetThree
       SecurityGroups: [!Ref 'PublicAppLoadBalancerSG']
   # A dummy target group is used to setup the ALB to just drop traffic
   # initially, before any real service target groups have been added.

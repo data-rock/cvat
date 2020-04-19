@@ -17,8 +17,10 @@
     "VpcId": "vpc-02311d65",
     "PrivateSubnetOne": "subnet-290e1a4e",
     "PrivateSubnetTwo": "subnet-d877f080",
+    "PrivateSubnetThree": "subnet-e54e4fac",
     "PublicSubnetOne": "subnet-09726019e5ffaffc7",
     "PublicSubnetTwo": "subnet-04a66456615238488",
+    "PublicSubnetThree": "subnet-0091c53dc4bf257a0",
     "BastionSecurityGroup": "sg-0b0845c59ba4dd862",
     "DBSnapshotIdentifier": "arn:aws:rds:ap-southeast-2:980755931163:snapshot:snapshot-after-migrate-vpc"
   }

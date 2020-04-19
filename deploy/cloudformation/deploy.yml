@@ -98,22 +98,20 @@ Parameters:
     Description: if true deploy CvatApi service
   VpcId:
     Type: String
-    Default: vpc-02311d65
   PrivateSubnetOne:
     Type: String
-    Default: subnet-290e1a4e
   PrivateSubnetTwo:
     Type: String
-    Default: subnet-d877f080
+  PrivateSubnetThree:
+    Type: String
   PublicSubnetOne:
     Type: String
-    Default: subnet-09726019e5ffaffc7
   PublicSubnetTwo:
     Type: String
-    Default: subnet-04a66456615238488
+  PublicSubnetThree:
+    Type: String
   BastionSecurityGroup:
     Type: String
-    Default: sg-0b0845c59ba4dd862
   DBSnapshotIdentifier:
     Type: String
     Default: ''
@@ -141,8 +139,10 @@ Resources:
         VpcId: !Ref VpcId
         PrivateSubnetOne: !Ref PrivateSubnetOne
         PrivateSubnetTwo: !Ref PrivateSubnetTwo
+        PrivateSubnetThree: !Ref PrivateSubnetThree
         PublicSubnetOne: !Ref PublicSubnetOne
         PublicSubnetTwo: !Ref PublicSubnetTwo
+        PublicSubnetThree: !Ref PublicSubnetThree
         BastionSecurityGroup: !Ref BastionSecurityGroup
       Tags:
         - Key: CostGroup
@@ -167,6 +167,7 @@ Resources:
         VpcId: !Ref VpcId
         PrivateSubnetOne: !Ref PrivateSubnetOne
         PrivateSubnetTwo: !Ref PrivateSubnetTwo
+        PrivateSubnetThree: !Ref PrivateSubnetThree
         ClusterName: Cvat-redis
         ContainerSecurityGroup:
           !GetAtt [CfnEcsStack, Outputs.ContainerSecurityGroup]
@@ -203,6 +204,7 @@ Resources:
         VpcId: !Ref VpcId
         PrivateSubnetOne: !Ref PrivateSubnetOne
         PrivateSubnetTwo: !Ref PrivateSubnetTwo
+        PrivateSubnetThree: !Ref PrivateSubnetThree
         ContainerSecurityGroup:
           !GetAtt [CfnEcsStack, Outputs.ContainerSecurityGroup]
         DBSnapshotIdentifier: !Ref DBSnapshotIdentifier

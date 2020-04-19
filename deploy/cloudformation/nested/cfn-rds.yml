@@ -8,6 +8,8 @@ Parameters:
     Type: String
   PrivateSubnetTwo:
     Type: String
+  PrivateSubnetThree:
+    Type: String
   DbName:
     Type: String
     Default: cvat
@@ -42,6 +44,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
 
   VpcSecurityGroup:
     Type: AWS::EC2::SecurityGroup

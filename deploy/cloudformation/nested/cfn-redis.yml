@@ -24,6 +24,8 @@ Parameters:
     Type: String
   PrivateSubnetTwo:
     Type: String
+  PrivateSubnetThree:
+    Type: String
 
   ClusterName:
     Description: Custom name of the cluster. Auto generated if you don't supply your own.
@@ -108,6 +110,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
 
   ElastiCacheCluster:
     Type: AWS::ElastiCache::CacheCluster

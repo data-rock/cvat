@@ -55,7 +55,7 @@ Resources:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
       AdjustmentType: ChangeInCapacity
-      Cooldown: 450
+      Cooldown: 900
       AutoScalingGroupName: !Ref ECSAutoScalingGroup
       ScalingAdjustment: -1
 
