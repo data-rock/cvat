@@ -8,6 +8,12 @@ Parameters:
   ECSAutoScalingGroup:
     Type: String
     Description: ECS AutoScalingGroup Name
+  ContainerCpu:
+    Type: Number
+    Default: 1792
+  ContainerMemory:
+    Type: Number
+    Default: 3328
 Resources:
   SchedulableContainersLowAlert:
     Type: AWS::CloudWatch::Alarm
@@ -116,9 +122,9 @@ Resources:
       Code:
         ZipFile: !Join
           - ''
-          - - |
-              CONTAINER_MAX_CPU = 1536
-              CONTAINER_MAX_MEM = 3200
+          - - !Sub |
+              CONTAINER_MAX_CPU = ${ContainerCpu}
+              CONTAINER_MAX_MEM = ${ContainerMemory}
 
               import boto3,os
               import datetime,dateutil

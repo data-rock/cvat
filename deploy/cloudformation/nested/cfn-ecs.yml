@@ -47,6 +47,10 @@ Parameters:
     Description: host name
     Type: String
     Default: label
+  ApiHostName:
+    Description: Api host name
+    Type: String
+    Default: label
   SpotPrice:
     Description: Spot price to bid
     Type: Number
@@ -392,14 +396,6 @@ Resources:
             IpProtocol: tcp
             FromPort: '443'
             ToPort: '443'
-          - CidrIp: 0.0.0.0/0
-            IpProtocol: tcp
-            FromPort: '8080'
-            ToPort: '8080'
-          - CidrIp: 0.0.0.0/0
-            IpProtocol: tcp
-            FromPort: '8443'
-            ToPort: '8443'
   PublicAppLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -430,20 +426,6 @@ Resources:
       UnhealthyThresholdCount: 2
       VpcId: !Ref 'VpcId'
 
-  DummyAPITargetGroupPublic:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
-      Name: !Sub '${ServiceName}-Dummy-Drop-Two'
-      Port: 8080
-      Protocol: HTTP
-      UnhealthyThresholdCount: 2
-      VpcId: !Ref 'VpcId'
-
   PublicAppLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     DependsOn:
@@ -456,22 +438,6 @@ Resources:
       # Port: 80
       # Protocol: HTTP
       Port: 443
-      Protocol: HTTPS
-      Certificates:
-        - CertificateArn: !Ref SSLCertificateArn
-
-  PublicAPILoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - PublicAppLoadBalancer
-    Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref 'DummyAPITargetGroupPublic'
-          Type: 'forward'
-      LoadBalancerArn: !Ref 'PublicAppLoadBalancer'
-      # Port: 8080
-      # Protocol: HTTP
-      Port: 8443
       Protocol: HTTPS
       Certificates:
         - CertificateArn: !Ref SSLCertificateArn
@@ -495,24 +461,6 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  PublicAPILoadBalancerHttpRedirectListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - PublicAppLoadBalancer
-    Properties:
-      DefaultActions:
-        - RedirectConfig:
-            Host: '#{host}'
-            Path: '/#{path}'
-            Port: 8443
-            Protocol: 'HTTPS'
-            Query: '#{query}'
-            StatusCode: HTTP_301
-          Type: redirect
-      LoadBalancerArn: !Ref 'PublicAppLoadBalancer'
-      Port: 8080
-      Protocol: HTTP
-
   ClusterDNSRecord:
     Type: AWS::Route53::RecordSetGroup
     Properties:
@@ -521,6 +469,12 @@ Resources:
       RecordSets:
       - Name:
           Fn::Join: ["", [!Ref HostName, ".", !Ref HostedZoneName]]
+        Type: A
+        AliasTarget:
+          HostedZoneId: !GetAtt PublicAppLoadBalancer.CanonicalHostedZoneID
+          DNSName: !GetAtt PublicAppLoadBalancer.DNSName
+      - Name:
+          Fn::Join: ["", [!Ref ApiHostName, ".", !Ref HostedZoneName]]
         Type: A
         AliasTarget:
           HostedZoneId: !GetAtt PublicAppLoadBalancer.CanonicalHostedZoneID
@@ -585,9 +539,6 @@ Outputs:
   PublicLoadBalancerListener:
     Description: The ARN of the public load balancer's Listener
     Value: !Ref PublicAppLoadBalancerListener
-  PublicAPILoadBalancerListener:
-    Description: The ARN of the public load balancer's Listener
-    Value: !Ref PublicAPILoadBalancerListener
   ContainerSecurityGroup:
     Description: A security group used to allow containers to receive traffic
     Value: !Ref 'ContainerSecurityGroup'

@@ -92,6 +92,9 @@ Parameters:
     Type: String
     Default: 'localhost, 127.0.0.0'
 
+  ApiUrl:
+    Type: String
+
 Conditions:
   HasCustomRole: !Not [ !Equals [!Ref 'Role', ''] ]
 
@@ -294,8 +297,8 @@ Resources:
         - TargetGroupArn: !Ref 'TargetGroup'
           Type: 'forward'
       Conditions:
-        - Field: path-pattern
-          Values: [!Ref 'Path']
+        - Field: host-header
+          Values: [!Ref 'ApiUrl']
       ListenerArn: !Ref 'PublicListener'
       Priority: !Ref 'Priority'
 

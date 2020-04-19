@@ -52,6 +52,10 @@ Parameters:
     Description: host name
     Type: String
     Default: label
+  ApiHostName:
+    Description: API host name
+    Type: String
+    Default: label-api
   ECSDesiredCapacity:
     Description: desired ECS instance capacity
     Type: Number
@@ -81,6 +85,9 @@ Parameters:
     Type: String
   HostUrl:
     Description: hosted url
+    Type: String
+  ApiUrl:
+    Description: Api url
     Type: String
   CreateCvatApiService:
     Type: String
@@ -115,6 +122,18 @@ Parameters:
   DBSnapshotIdentifier:
     Type: String
     Default: ''
+  ApiCpu:
+    Type: Number
+    Default: 1792
+  ApiMemory:
+    Type: Number
+    Default: 3328
+  UiCpu:
+    Type: Number
+    Default: 512
+  UiMemory:
+    Type: Number
+    Default: 568
 
 Conditions:
   EnableTaskCvatApi: !Equals [!Ref CreateCvatApiService, 'true']
@@ -135,6 +154,7 @@ Resources:
         EFSNameTag: CvatEFSVolume
         SSLCertificateArn:  !Ref SSLCertificateArn
         HostName: !Ref HostName
+        ApiHostName: !Ref ApiHostName
         HostedZoneName: !Ref HostedZoneName
         VpcId: !Ref VpcId
         PrivateSubnetOne: !Ref PrivateSubnetOne
@@ -183,6 +203,8 @@ Resources:
       Parameters:
         ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
         ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
+        ContainerCpu: !Ref ApiCpu
+        ContainerMemory: !Ref ApiMemory
 
   CfnECSLifeCycleHookStack:
     Type: AWS::CloudFormation::Stack
@@ -220,8 +242,9 @@ Resources:
       Parameters:
         ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
         ServiceName: Cvat-app
-        PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicAPILoadBalancerListener]
+        PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicLoadBalancerListener]
         HostUrl: !Ref HostUrl
+        ApiUrl: !Ref ApiUrl
         VpcId: !Ref VpcId
         DbHost: !GetAtt [CfnRdsStack, Outputs.DbEndpoint]
         DbName: !Ref DbName
@@ -232,8 +255,8 @@ Resources:
         DesiredCount: !Ref APIServiceDesiredCount
         MaxCount: !Ref ServiceMaxCount
         ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
-        ContainerCpu: 1792
-        ContainerMemory: 3328
+        ContainerCpu: !Ref ApiCpu
+        ContainerMemory: !Ref ApiMemory
         AllowedHosts: '*'
 
   CfnCvatUIStack:
@@ -251,5 +274,5 @@ Resources:
         DesiredCount: !Ref UIServiceDesiredCount
         MaxCount: !Ref ServiceMaxCount
         ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatUIECRRepository], !Ref 'CvatImageTag' ] ]
-        ContainerCpu: 256
-        ContainerMemory: 512
+        ContainerCpu: !Ref UiCpu
+        ContainerMemory: !Ref UiMemory

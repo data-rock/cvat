@@ -8,6 +8,7 @@ require_env_var AWS_ACCOUNT
 require_env_var CVAT_IMAGE
 require_env_var CVAT_UI_IMAGE
 require_env_var CVAT_DOMAIN_NAME
+require_env_var CVAT_API_DOMAIN_NAME
 
 require_binary aws
 
@@ -28,7 +29,7 @@ docker build -t "$CVAT_IMAGE" \
 echo "🌳 Building Dockerfile for $CVAT_UI_IMAGE:$GIT_COMMIT_HASH"
 docker build -t "$CVAT_UI_IMAGE" \
              -f Dockerfile.ui \
-             --build-arg REACT_APP_API_URL="https://$CVAT_DOMAIN_NAME:8443" \
+             --build-arg REACT_APP_API_URL="https://$CVAT_API_DOMAIN_NAME" \
              .
 
 echo "🌳 Logging in to docker"

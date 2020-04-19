@@ -15,11 +15,13 @@ if [ ! -z "${DEPLOY_PRODUCTION-}" ]; then
   export AWS_ACCOUNT="492445691754"
   export STACK_SUFFIX="prod"
   export CVAT_DOMAIN_NAME="label.datarock.com.au"
+  export CVAT_API_DOMAIN_NAME="label-api.prod.datarock.com.au"
   export CLOUDFORMATION_TEMP_BUCKET_NAME="datarock-cvat-cloudformation-deploy-prod-temp"
 else
   # Development settings
   export AWS_ACCOUNT="980755931163"
   export STACK_SUFFIX="test"
   export CVAT_DOMAIN_NAME="label-test.datarock.com.au"
+  export CVAT_API_DOMAIN_NAME="label-api.test.datarock.com.au"
   export CLOUDFORMATION_TEMP_BUCKET_NAME="datarock-cvat-cloudformation-deploy-temp"
 fi
