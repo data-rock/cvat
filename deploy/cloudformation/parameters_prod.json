@@ -13,6 +13,13 @@
     "ServiceMaxCount": "5",
     "HostUrl": "label.datarock.com.au",
     "HostName": "label",
-    "HostedZoneName": "prod.datarock.com.au."
+    "HostedZoneName": "prod.datarock.com.au.",
+    "VpcId": "vpc-d61d31b1",
+    "PrivateSubnetOne": "subnet-fd3a2e9a",
+    "PrivateSubnetTwo": "subnet-940384cc",
+    "PublicSubnetOnw": "subnet-0d632e0ab1a0ac35b",
+    "PublicSubnetTwo": "subnet-0740979d04cee7bf7",
+    "BastionSecurityGroup": "sg-0391509821915b787",
+    "DBSnapshotIdentifier": "arn:aws:rds:ap-southeast-2:492445691754:snapshot:migrate-to-default-vpc"
   }
 }

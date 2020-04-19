@@ -96,6 +96,27 @@ Parameters:
       - 'false'
     Default: 'true'
     Description: if true deploy CvatApi service
+  VpcId:
+    Type: String
+    Default: vpc-02311d65
+  PrivateSubnetOne:
+    Type: String
+    Default: subnet-290e1a4e
+  PrivateSubnetTwo:
+    Type: String
+    Default: subnet-d877f080
+  PublicSubnetOne:
+    Type: String
+    Default: subnet-09726019e5ffaffc7
+  PublicSubnetTwo:
+    Type: String
+    Default: subnet-04a66456615238488
+  BastionSecurityGroup:
+    Type: String
+    Default: sg-0b0845c59ba4dd862
+  DBSnapshotIdentifier:
+    Type: String
+    Default: ''
 
 Conditions:
   EnableTaskCvatApi: !Equals [!Ref CreateCvatApiService, 'true']
@@ -108,13 +129,7 @@ Resources:
       TemplateURL: ./nested/cfn-ecs.yml
       Parameters:
         KeyPairName: !Ref SSHKeyPairName
-        SSHLocation: '10.0.0.0/16'
         ServiceName: !Ref ServiceName
-        VpcCIDR: '10.0.0.0/16'
-        PublicOneCIDR: '10.0.0.0/24'
-        PublicTwoCIDR: '10.0.1.0/24'
-        PrivateOneCIDR: '10.0.2.0/24'
-        PrivateTwoCIDR: '10.0.3.0/24'
         DesiredCapacity: !Ref ECSDesiredCapacity
         MaxSize: !Ref ECSMaxCapacity
         InstanceType: t2.medium
@@ -123,6 +138,12 @@ Resources:
         SSLCertificateArn:  !Ref SSLCertificateArn
         HostName: !Ref HostName
         HostedZoneName: !Ref HostedZoneName
+        VpcId: !Ref VpcId
+        PrivateSubnetOne: !Ref PrivateSubnetOne
+        PrivateSubnetTwo: !Ref PrivateSubnetTwo
+        PublicSubnetOne: !Ref PublicSubnetOne
+        PublicSubnetTwo: !Ref PublicSubnetTwo
+        BastionSecurityGroup: !Ref BastionSecurityGroup
       Tags:
         - Key: CostGroup
           Value: !Ref CostGroupTag
@@ -132,50 +153,43 @@ Resources:
     Properties:
       TemplateURL: ./nested/cfn-ecr.yml
       Parameters:
-        VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
-        PrivateSubnetOne: !GetAtt [CfnEcsStack, Outputs.PrivateSubnetOne]
-        PrivateSubnetTwo: !GetAtt [CfnEcsStack, Outputs.PrivateSubnetTwo]
-        PrivateRouteTableOne: !GetAtt [CfnEcsStack, Outputs.PrivateRouteTableOne]
-        PrivateRouteTableTwo: !GetAtt [CfnEcsStack, Outputs.PrivateRouteTableTwo]
-        EcsHostSecurityGroup:
-          !GetAtt [CfnEcsStack, Outputs.EcsHostSecurityGroup]
         CvatECRRepositoryName: !Ref CvatECRRepositoryName
         CvatUIECRRepositoryName: !Ref CvatUIECRRepositoryName
       Tags:
         - Key: CostGroup
           Value: !Ref CostGroupTag
 
-  CfnRedisStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./nested/cfn-redis.yml
-      Parameters:
-        VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
-        PrivateSubnetOne: !GetAtt [CfnEcsStack, Outputs.PrivateSubnetOne]
-        PrivateSubnetTwo: !GetAtt [CfnEcsStack, Outputs.PrivateSubnetTwo]
-        ClusterName: Cvat-redis
-        EcsHostSecurityGroup:
-          !GetAtt [CfnEcsStack, Outputs.EcsHostSecurityGroup]
-        CacheNodeType: cache.t2.micro
-      Tags:
-        - Key: CostGroup
-          Value: !Ref CostGroupTag
+  # CfnRedisStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: ./nested/cfn-redis.yml
+  #     Parameters:
+  #       VpcId: !Ref VpcId
+  #       PrivateSubnetOne: !Ref PrivateSubnetOne
+  #       PrivateSubnetTwo: !Ref PrivateSubnetTwo
+  #       ClusterName: Cvat-redis
+  #       ContainerSecurityGroup:
+  #         !GetAtt [CfnEcsStack, Outputs.ContainerSecurityGroup]
+  #       CacheNodeType: cache.t2.micro
+  #     Tags:
+  #       - Key: CostGroup
+  #         Value: !Ref CostGroupTag
 
-  CfnCloudWatchStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./nested/cfn-cloudwatch.yml
-      Parameters:
-        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-        ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
+  # CfnCloudWatchStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: ./nested/cfn-cloudwatch.yml
+  #     Parameters:
+  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+  #       ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
 
-  CfnECSLifeCycleHookStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./nested/cfn-ecs-lifecyclehook.yml
-      Parameters:
-        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-        ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
+  # CfnECSLifeCycleHookStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: ./nested/cfn-ecs-lifecyclehook.yml
+  #     Parameters:
+  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+  #       ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
 
   CfnRdsStack:
     Type: AWS::CloudFormation::Stack
@@ -186,70 +200,54 @@ Resources:
         DbMasterUser: !Ref DbUser
         DbMasterPassword: !Ref 'DbPassword'
         DbInstanceClass: db.t3.micro
-        VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
-        PrivateSubnetOne: !GetAtt [CfnEcsStack, Outputs.PrivateSubnetOne]
-        PrivateSubnetTwo: !GetAtt [CfnEcsStack, Outputs.PrivateSubnetTwo]
-        EcsHostSecurityGroup:
-          !GetAtt [CfnEcsStack, Outputs.EcsHostSecurityGroup]
+        VpcId: !Ref VpcId
+        PrivateSubnetOne: !Ref PrivateSubnetOne
+        PrivateSubnetTwo: !Ref PrivateSubnetTwo
+        ContainerSecurityGroup:
+          !GetAtt [CfnEcsStack, Outputs.ContainerSecurityGroup]
+        DBSnapshotIdentifier: !Ref DBSnapshotIdentifier
       Tags:
         - Key: CostGroup
           Value: !Ref CostGroupTag
 
-  CfnBastionStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./nested/cfn-bastion.yml
-      Parameters:
-        InstanceType: t2.micro
-        KeyPairName: !Ref SSHKeyPairName
-        PublicSubnetOne: !GetAtt [CfnEcsStack, Outputs.PublicSubnetOne]
-        PublicSubnetTwo: !GetAtt [CfnEcsStack, Outputs.PublicSubnetTwo]
-        RemoteAccessCIDR: '0.0.0.0/0'
-        VPCID: !GetAtt [CfnEcsStack, Outputs.VPCId]
-        EcsHostSecurityGroup:
-          !GetAtt [CfnEcsStack, Outputs.EcsHostSecurityGroup]
-      Tags:
-        - Key: CostGroup
-          Value: !Ref CostGroupTag
+  # CfnCvatApiStack:
+  #   Condition: EnableTaskCvatApi
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: ./nested/cfn-cvat-api.yml
+  #     Parameters:
+  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+  #       ServiceName: Cvat-app
+  #       PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicAPILoadBalancerListener]
+  #       HostUrl: !Ref HostUrl
+  #       VpcId: !Ref VpcId
+  #       DbHost: !GetAtt [CfnRdsStack, Outputs.DbEndpoint]
+  #       DbName: !Ref DbName
+  #       DbUser: !Ref DbUser
+  #       DbPassword: !Ref 'DbPassword'
+  #       RedisHost: !GetAtt [CfnRedisStack, Outputs.ElastiCacheAddress]
+  #       Priority: 1
+  #       DesiredCount: !Ref APIServiceDesiredCount
+  #       MaxCount: !Ref ServiceMaxCount
+  #       ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
+  #       ContainerCpu: 1792
+  #       ContainerMemory: 3328
+  #       AllowedHosts: '*'
 
-  CfnCvatApiStack:
-    Condition: EnableTaskCvatApi
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./nested/cfn-cvat-api.yml
-      Parameters:
-        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-        ServiceName: Cvat-app
-        PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicAPILoadBalancerListener]
-        HostUrl: !Ref HostUrl
-        VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
-        DbHost: !GetAtt [CfnRdsStack, Outputs.DbEndpoint]
-        DbName: !Ref DbName
-        DbUser: !Ref DbUser
-        DbPassword: !Ref 'DbPassword'
-        RedisHost: !GetAtt [CfnRedisStack, Outputs.ElastiCacheAddress]
-        Priority: 1
-        DesiredCount: !Ref APIServiceDesiredCount
-        MaxCount: !Ref ServiceMaxCount
-        ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
-        ContainerCpu: 1792
-        ContainerMemory: 3328
-        AllowedHosts: '*'
-
-  CfnCvatUIStack:
-    Condition: EnableTaskCvatUI
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./nested/cfn-cvat-ui.yml
-      Parameters:
-        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-        ServiceName: Cvat-ui
-        PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicLoadBalancerListener]
-        HostUrl: !Ref HostUrl
-        VpcId: !GetAtt [CfnEcsStack, Outputs.VPCId]
-        Priority: 2
-        DesiredCount: !Ref UIServiceDesiredCount
-        MaxCount: !Ref ServiceMaxCount
-        ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatUIECRRepository], !Ref 'CvatImageTag' ] ]
-        ContainerCpu: 256
-        ContainerMemory: 512
+  # CfnCvatUIStack:
+  #   Condition: EnableTaskCvatUI
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: ./nested/cfn-cvat-ui.yml
+  #     Parameters:
+  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+  #       ServiceName: Cvat-ui
+  #       PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicLoadBalancerListener]
+  #       HostUrl: !Ref HostUrl
+  #       VpcId: !Ref VpcId
+  #       Priority: 2
+  #       DesiredCount: !Ref UIServiceDesiredCount
+  #       MaxCount: !Ref ServiceMaxCount
+  #       ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatUIECRRepository], !Ref 'CvatImageTag' ] ]
+  #       ContainerCpu: 256
+  #       ContainerMemory: 512

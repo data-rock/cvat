@@ -25,12 +25,17 @@ Parameters:
     Description: Specifies the database instance type to be used
     Type: String
     Default: 'db.t3.micro'
-  EcsHostSecurityGroup:
+  ContainerSecurityGroup:
     Type: String
-    Description: EcsHostSecurityGroup
+    Description: ContainerSecurityGroup
+  DBSnapshotIdentifier:
+    Type: String
+
+Conditions:
+  IsRestore: !Not [ !Equals [!Ref 'DBSnapshotIdentifier', ''] ]
 
 Resources:
-  RdsSubnetGroup:
+  RDSSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: !Ref AWS::StackName
@@ -44,7 +49,7 @@ Resources:
       VpcId: !Ref VpcId
       GroupDescription: 'RDS security group'
       SecurityGroupIngress:
-        - SourceSecurityGroupId: !Ref 'EcsHostSecurityGroup'
+        - SourceSecurityGroupId: !Ref 'ContainerSecurityGroup'
           IpProtocol: tcp
           FromPort: 5432
           ToPort: 5432
@@ -55,11 +60,17 @@ Resources:
    Properties:
      AllowMajorVersionUpgrade: false
      AutoMinorVersionUpgrade: false
-     AllocatedStorage: 5
-     DBName: !Ref DbName
+     AllocatedStorage: 20
+     StorageType: gp2
+     DBSnapshotIdentifier: !Ref DBSnapshotIdentifier
+     DBName:
+      Fn::If:
+        - 'IsRestore'
+        - !Ref "AWS::NoValue"
+        - !Ref DbName
      DBInstanceClass: !Ref DbInstanceClass
-     DBInstanceIdentifier: !Ref DbName
-     DBSubnetGroupName: !Ref RdsSubnetGroup
+     DBInstanceIdentifier: !Join ['', [!Ref DbName, RDS]]
+     DBSubnetGroupName: !Ref RDSSubnetGroup
      Engine: postgres
      EngineVersion: '11.2'
      MasterUsername: !Ref DbMasterUser

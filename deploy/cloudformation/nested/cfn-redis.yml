@@ -76,9 +76,9 @@ Parameters:
       - true
       - false
 
-  EcsHostSecurityGroup:
+  ContainerSecurityGroup:
     Type: String
-    Description: EcsHostSecurityGroup
+    Description: ContainerSecurityGroup
 
 Conditions:
 
@@ -92,7 +92,7 @@ Resources:
       GroupDescription: ElastiCache Security Group
       VpcId: !Ref VpcId
       SecurityGroupIngress:
-        - SourceSecurityGroupId: !Ref 'EcsHostSecurityGroup'
+        - SourceSecurityGroupId: !Ref 'ContainerSecurityGroup'
           IpProtocol: tcp
           FromPort: !If [ IsRedis, 6379, 11211]
           ToPort: !If [ IsRedis, 6379, 11211]
