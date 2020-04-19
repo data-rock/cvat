@@ -50,7 +50,7 @@ Parameters:
   SpotPrice:
     Description: Spot price to bid
     Type: Number
-    Default: 0.0292
+    Default: 0.12
   VpcId:
     Type: String
     Default: vpc-02311d65
@@ -120,20 +120,20 @@ Resources:
       FileSystemTags:
         - Key: Name
           Value: !Ref 'EFSNameTag'
-  # MountTargetOne:
-  #   Type: AWS::EFS::MountTarget
-  #   Properties:
-  #     FileSystemId: !Ref 'FileSystem'
-  #     SubnetId: !Ref 'PrivateSubnetOne'
-  #     SecurityGroups:
-  #       - !Ref 'MountTargetSecurityGroup'
-  # MountTargetTwo:
-  #   Type: AWS::EFS::MountTarget
-  #   Properties:
-  #     FileSystemId: !Ref 'FileSystem'
-  #     SubnetId: !Ref 'PrivateSubnetTwo'
-  #     SecurityGroups:
-  #       - !Ref 'MountTargetSecurityGroup'
+  MountTargetOne:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref 'FileSystem'
+      SubnetId: !Ref 'PrivateSubnetOne'
+      SecurityGroups:
+        - !Ref 'MountTargetSecurityGroup'
+  MountTargetTwo:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref 'FileSystem'
+      SubnetId: !Ref 'PrivateSubnetTwo'
+      SecurityGroups:
+        - !Ref 'MountTargetSecurityGroup'
 
   # A security group for the EC2 hosts that will run the containers.
   # Two rules, allowing network traffic from a public facing load
@@ -166,183 +166,174 @@ Resources:
   # Autoscaling group. This launches the actual EC2 instances that will register
   # themselves as members of the cluster, and run the docker containers.
 
-  # ECSAutoScalingGroup:
-  #   Type: AWS::AutoScaling::AutoScalingGroup
-  #   DependsOn:
-  #     - MountTargetOne
-  #     - MountTargetTwo
-  #   Properties:
-  #     AvailabilityZones:
-  #       - !Select
-  #         - '0'
-  #         - !GetAZs
-  #           Ref: AWS::Region
-  #       - !Select
-  #         - '1'
-  #         - !GetAZs
-  #           Ref: AWS::Region
-  #     VPCZoneIdentifier:
-  #       - !Ref PrivateSubnetOne
-  #       - !Ref PrivateSubnetTwo
-  #     LaunchConfigurationName: !Ref 'ContainerInstances'
-  #     MinSize: '0'
-  #     MaxSize: !Ref 'MaxSize'
-  #     DesiredCapacity: !Ref 'DesiredCapacity'
-  #   CreationPolicy:
-  #     ResourceSignal:
-  #       Timeout: PT15M
-  #   UpdatePolicy:
-  #     AutoScalingReplacingUpdate:
-  #       WillReplace: 'true'
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn:
+      - MountTargetOne
+      - MountTargetTwo
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      LaunchConfigurationName: !Ref 'ContainerInstances'
+      MinSize: '0'
+      MaxSize: !Ref 'MaxSize'
+      DesiredCapacity: !Ref 'DesiredCapacity'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: 'true'
 
-  # ContainerInstances:
-  #   Type: AWS::AutoScaling::LaunchConfiguration
-  #   Metadata:
-  #     AWS::CloudFormation::Init:
-  #       configSets:
-  #         Install:
-  #           - Install
-  #       Install:
-  #         packages:
-  #           yum:
-  #             nfs-utils: []
-  #             python27: []
-  #         files:
-  #           /etc/cfn/cfn-hup.conf:
-  #             content: !Join
-  #               - ''
-  #               - - "[main]\n"
-  #                 - stack=
-  #                 - !Ref 'AWS::StackId'
-  #                 - "\n"
-  #                 - region=
-  #                 - !Ref 'AWS::Region'
-  #                 - "\n"
-  #             mode: '000400'
-  #             owner: root
-  #             group: root
-  #           /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-  #             content: !Join
-  #               - ''
-  #               - - "[cfn-auto-reloader-hook]\n"
-  #                 - "triggers=post.update\n"
-  #                 - "path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init\n"
-  #                 - 'action=/opt/aws/bin/cfn-init -v '
-  #                 - '         --stack '
-  #                 - !Ref 'AWS::StackName'
-  #                 - '         --resource ContainerInstances '
-  #                 - '         --region '
-  #                 - !Ref 'AWS::Region'
-  #                 - "\n"
-  #                 - "runas=root\n"
-  #         services:
-  #           sysvinit:
-  #             cfn-hup:
-  #               enabled: 'true'
-  #               ensureRunning: 'true'
-  #               files:
-  #                 - /etc/cfn/cfn-hup.conf
-  #                 - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-  #     AWS::CloudFormation::Designer:
-  #       id: d86a3e51-ef74-4f2a-9591-8c547b7bee6c
-  #   Properties:
-  #     ImageId: !FindInMap
-  #       - AWSRegionToAMI
-  #       - !Ref 'AWS::Region'
-  #       - AMIID
-  #     BlockDeviceMappings:
-  #       - DeviceName: /dev/xvdcz
-  #         Ebs:
-  #           DeleteOnTermination: true
-  #           Encrypted: false
-  #           Iops: 100
-  #           VolumeSize: 22 # minimum required to store the container layer infos
-  #           VolumeType: gp2
-  #     InstanceType: !Ref 'InstanceType'
-  #     SpotPrice: !Ref SpotPrice
-  #     IamInstanceProfile: !Ref 'EC2InstanceProfile'
-  #     KeyName: !Ref 'KeyPairName'
-  #     AssociatePublicIpAddress: false
-  #     SecurityGroups:
-  #       - !Ref ContainerSecurityGroup
-  #     UserData: !Base64
-  #       Fn::Join:
-  #         - ''
-  #         - - "#!/bin/bash\n"
-  #           - echo ECS_CLUSTER=
-  #           - !Ref 'ECSCluster'
-  #           - " >> /etc/ecs/ecs.config\n"
-  #           - "yum install -y aws-cfn-bootstrap\n"
-  #           - /opt/aws/bin/cfn-init
-  #           - '         --stack '
-  #           - !Ref 'AWS::StackName'
-  #           - ' '
-  #           - '         --resource ContainerInstances '
-  #           - '         --configsets Install '
-  #           - '         --region '
-  #           - !Ref 'AWS::Region'
-  #           - "\n"
-  #           - "PATH=$PATH:/usr/local/bin\n"
-  #           - "yum update\n"
-  #           - "EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`\n"
-  #           - EC2_REGION=
-  #           - !Ref 'AWS::Region'
-  #           - "\n"
-  #           - "mkdir /mnt/efs\n"
-  #           - EFS_FILE_SYSTEM_ID=
-  #           - !Ref 'FileSystem'
-  #           - "\n"
-  #           - "DIR_SRC=$EC2_AVAIL_ZONE.$EFS_FILE_SYSTEM_ID.efs.$EC2_REGION.amazonaws.com\n"
-  #           - "DIR_TGT=/mnt/efs\n"
-  #           - "touch /home/ec2-user/echo.res\n"
-  #           - "echo $EFS_FILE_SYSTEM_ID >> /home/ec2-user/echo.res\n"
-  #           - "echo $EC2_AVAIL_ZONE >> /home/ec2-user/echo.res\n"
-  #           - "echo $EC2_REGION >> /home/ec2-user/echo.res\n"
-  #           - "echo $DIR_SRC >> /home/ec2-user/echo.res\n"
-  #           - "echo $DIR_TGT >> /home/ec2-user/echo.res\n"
-  #           - "mount -t nfs4 $DIR_SRC:/ $DIR_TGT >> /home/ec2-user/echo.res\n"
-  #           - "cp -p /etc/fstab /etc/fstab.back-$(date +%F)\n"
-  #           - "echo -e \"$DIR_SRC:/ \t\t $DIR_TGT \t\t nfs \t\t defaults \t\t 0 \t\
-  #             \t 0\" | tee -a /etc/fstab\n"
-  #           - "sudo chmod 777 -R /mnt/efs\n"
-  #           - "sudo chmod 777 -R /mnt/efs/*\n"
-  #           - "docker ps\n"
-  #           - "service docker stop\n"
-  #           - "service docker start\n"
-  #           - '/opt/aws/bin/cfn-signal -e $? '
-  #           - '         --stack '
-  #           - !Ref 'AWS::StackName'
-  #           - '         --resource ECSAutoScalingGroup '
-  #           - '         --region '
-  #           - !Ref 'AWS::Region'
-  #           - "\n"
-  # AutoscalingRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Statement:
-  #       - Effect: Allow
-  #         Principal:
-  #           Service: [application-autoscaling.amazonaws.com]
-  #         Action: ['sts:AssumeRole']
-  #     Path: /
-  #     Policies:
-  #     - PolicyName: service-autoscaling
-  #       PolicyDocument:
-  #         Statement:
-  #         - Effect: Allow
-  #           Action:
-  #             - 'application-autoscaling:*'
-  #             - 'cloudwatch:DescribeAlarms'
-  #             - 'cloudwatch:PutMetricAlarm'
-  #             - 'ecs:DescribeServices'
-  #             - 'ecs:UpdateService'
-  #           Resource: '*'
-  # EC2InstanceProfile:
-  #   Type: AWS::IAM::InstanceProfile
-  #   Properties:
-  #     Path: /
-  #     Roles: [!Ref 'EC2Role']
+  ContainerInstances:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          Install:
+            - Install
+        Install:
+          packages:
+            yum:
+              nfs-utils: []
+              python27: []
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Join
+                - ''
+                - - "[main]\n"
+                  - stack=
+                  - !Ref 'AWS::StackId'
+                  - "\n"
+                  - region=
+                  - !Ref 'AWS::Region'
+                  - "\n"
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Join
+                - ''
+                - - "[cfn-auto-reloader-hook]\n"
+                  - "triggers=post.update\n"
+                  - "path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init\n"
+                  - 'action=/opt/aws/bin/cfn-init -v '
+                  - '         --stack '
+                  - !Ref 'AWS::StackName'
+                  - '         --resource ContainerInstances '
+                  - '         --region '
+                  - !Ref 'AWS::Region'
+                  - "\n"
+                  - "runas=root\n"
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+      AWS::CloudFormation::Designer:
+        id: d86a3e51-ef74-4f2a-9591-8c547b7bee6c
+    Properties:
+      ImageId: !FindInMap
+        - AWSRegionToAMI
+        - !Ref 'AWS::Region'
+        - AMIID
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvdcz
+          Ebs:
+            DeleteOnTermination: true
+            Encrypted: false
+            Iops: 100
+            VolumeSize: 22 # minimum required to store the container layer infos
+            VolumeType: gp2
+      InstanceType: !Ref 'InstanceType'
+      SpotPrice: !Ref SpotPrice
+      IamInstanceProfile: !Ref 'EC2InstanceProfile'
+      KeyName: !Ref 'KeyPairName'
+      AssociatePublicIpAddress: false
+      SecurityGroups:
+        - !Ref ContainerSecurityGroup
+      UserData: !Base64
+        Fn::Join:
+          - ''
+          - - "#!/bin/bash\n"
+            - echo ECS_CLUSTER=
+            - !Ref 'ECSCluster'
+            - " >> /etc/ecs/ecs.config\n"
+            - "yum install -y aws-cfn-bootstrap\n"
+            - /opt/aws/bin/cfn-init
+            - '         --stack '
+            - !Ref 'AWS::StackName'
+            - ' '
+            - '         --resource ContainerInstances '
+            - '         --configsets Install '
+            - '         --region '
+            - !Ref 'AWS::Region'
+            - "\n"
+            - "PATH=$PATH:/usr/local/bin\n"
+            - "yum update\n"
+            - "EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`\n"
+            - EC2_REGION=
+            - !Ref 'AWS::Region'
+            - "\n"
+            - "mkdir /mnt/efs\n"
+            - EFS_FILE_SYSTEM_ID=
+            - !Ref 'FileSystem'
+            - "\n"
+            - "DIR_SRC=$EC2_AVAIL_ZONE.$EFS_FILE_SYSTEM_ID.efs.$EC2_REGION.amazonaws.com\n"
+            - "DIR_TGT=/mnt/efs\n"
+            - "touch /home/ec2-user/echo.res\n"
+            - "echo $EFS_FILE_SYSTEM_ID >> /home/ec2-user/echo.res\n"
+            - "echo $EC2_AVAIL_ZONE >> /home/ec2-user/echo.res\n"
+            - "echo $EC2_REGION >> /home/ec2-user/echo.res\n"
+            - "echo $DIR_SRC >> /home/ec2-user/echo.res\n"
+            - "echo $DIR_TGT >> /home/ec2-user/echo.res\n"
+            - "mount -t nfs4 $DIR_SRC:/ $DIR_TGT >> /home/ec2-user/echo.res\n"
+            - "cp -p /etc/fstab /etc/fstab.back-$(date +%F)\n"
+            - "echo -e \"$DIR_SRC:/ \t\t $DIR_TGT \t\t nfs \t\t defaults \t\t 0 \t\
+              \t 0\" | tee -a /etc/fstab\n"
+            - "sudo chmod 777 -R /mnt/efs\n"
+            - "sudo chmod 777 -R /mnt/efs/*\n"
+            - "docker ps\n"
+            - "service docker stop\n"
+            - "service docker start\n"
+            - '/opt/aws/bin/cfn-signal -e $? '
+            - '         --stack '
+            - !Ref 'AWS::StackName'
+            - '         --resource ECSAutoScalingGroup '
+            - '         --region '
+            - !Ref 'AWS::Region'
+            - "\n"
+  AutoscalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [application-autoscaling.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: service-autoscaling
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - 'application-autoscaling:*'
+              - 'cloudwatch:DescribeAlarms'
+              - 'cloudwatch:PutMetricAlarm'
+              - 'ecs:DescribeServices'
+              - 'ecs:UpdateService'
+            Resource: '*'
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [!Ref 'EC2Role']
 
 
 
@@ -579,6 +570,6 @@ Outputs:
   ContainerSecurityGroup:
     Description: A security group used to allow containers to receive traffic
     Value: !Ref 'ContainerSecurityGroup'
-  # ECSAutoScalingGroup:
-  #   Description: ECS auto scaling group
-  #   Value: !Ref ECSAutoScalingGroup
+  ECSAutoScalingGroup:
+    Description: ECS auto scaling group
+    Value: !Ref ECSAutoScalingGroup

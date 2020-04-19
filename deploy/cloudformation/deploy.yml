@@ -159,37 +159,37 @@ Resources:
         - Key: CostGroup
           Value: !Ref CostGroupTag
 
-  # CfnRedisStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: ./nested/cfn-redis.yml
-  #     Parameters:
-  #       VpcId: !Ref VpcId
-  #       PrivateSubnetOne: !Ref PrivateSubnetOne
-  #       PrivateSubnetTwo: !Ref PrivateSubnetTwo
-  #       ClusterName: Cvat-redis
-  #       ContainerSecurityGroup:
-  #         !GetAtt [CfnEcsStack, Outputs.ContainerSecurityGroup]
-  #       CacheNodeType: cache.t2.micro
-  #     Tags:
-  #       - Key: CostGroup
-  #         Value: !Ref CostGroupTag
+  CfnRedisStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested/cfn-redis.yml
+      Parameters:
+        VpcId: !Ref VpcId
+        PrivateSubnetOne: !Ref PrivateSubnetOne
+        PrivateSubnetTwo: !Ref PrivateSubnetTwo
+        ClusterName: Cvat-redis
+        ContainerSecurityGroup:
+          !GetAtt [CfnEcsStack, Outputs.ContainerSecurityGroup]
+        CacheNodeType: cache.t2.micro
+      Tags:
+        - Key: CostGroup
+          Value: !Ref CostGroupTag
 
-  # CfnCloudWatchStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: ./nested/cfn-cloudwatch.yml
-  #     Parameters:
-  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-  #       ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
+  CfnCloudWatchStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested/cfn-cloudwatch.yml
+      Parameters:
+        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+        ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
 
-  # CfnECSLifeCycleHookStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: ./nested/cfn-ecs-lifecyclehook.yml
-  #     Parameters:
-  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-  #       ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
+  CfnECSLifeCycleHookStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested/cfn-ecs-lifecyclehook.yml
+      Parameters:
+        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+        ECSAutoScalingGroup: !GetAtt [CfnEcsStack, Outputs.ECSAutoScalingGroup]
 
   CfnRdsStack:
     Type: AWS::CloudFormation::Stack
@@ -210,44 +210,44 @@ Resources:
         - Key: CostGroup
           Value: !Ref CostGroupTag
 
-  # CfnCvatApiStack:
-  #   Condition: EnableTaskCvatApi
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: ./nested/cfn-cvat-api.yml
-  #     Parameters:
-  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-  #       ServiceName: Cvat-app
-  #       PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicAPILoadBalancerListener]
-  #       HostUrl: !Ref HostUrl
-  #       VpcId: !Ref VpcId
-  #       DbHost: !GetAtt [CfnRdsStack, Outputs.DbEndpoint]
-  #       DbName: !Ref DbName
-  #       DbUser: !Ref DbUser
-  #       DbPassword: !Ref 'DbPassword'
-  #       RedisHost: !GetAtt [CfnRedisStack, Outputs.ElastiCacheAddress]
-  #       Priority: 1
-  #       DesiredCount: !Ref APIServiceDesiredCount
-  #       MaxCount: !Ref ServiceMaxCount
-  #       ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
-  #       ContainerCpu: 1792
-  #       ContainerMemory: 3328
-  #       AllowedHosts: '*'
+  CfnCvatApiStack:
+    Condition: EnableTaskCvatApi
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested/cfn-cvat-api.yml
+      Parameters:
+        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+        ServiceName: Cvat-app
+        PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicAPILoadBalancerListener]
+        HostUrl: !Ref HostUrl
+        VpcId: !Ref VpcId
+        DbHost: !GetAtt [CfnRdsStack, Outputs.DbEndpoint]
+        DbName: !Ref DbName
+        DbUser: !Ref DbUser
+        DbPassword: !Ref 'DbPassword'
+        RedisHost: !GetAtt [CfnRedisStack, Outputs.ElastiCacheAddress]
+        Priority: 1
+        DesiredCount: !Ref APIServiceDesiredCount
+        MaxCount: !Ref ServiceMaxCount
+        ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatECRRepository], !Ref 'CvatImageTag' ] ]
+        ContainerCpu: 1792
+        ContainerMemory: 3328
+        AllowedHosts: '*'
 
-  # CfnCvatUIStack:
-  #   Condition: EnableTaskCvatUI
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: ./nested/cfn-cvat-ui.yml
-  #     Parameters:
-  #       ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
-  #       ServiceName: Cvat-ui
-  #       PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicLoadBalancerListener]
-  #       HostUrl: !Ref HostUrl
-  #       VpcId: !Ref VpcId
-  #       Priority: 2
-  #       DesiredCount: !Ref UIServiceDesiredCount
-  #       MaxCount: !Ref ServiceMaxCount
-  #       ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatUIECRRepository], !Ref 'CvatImageTag' ] ]
-  #       ContainerCpu: 256
-  #       ContainerMemory: 512
+  CfnCvatUIStack:
+    Condition: EnableTaskCvatUI
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nested/cfn-cvat-ui.yml
+      Parameters:
+        ClusterName: !GetAtt [CfnEcsStack, Outputs.ClusterName]
+        ServiceName: Cvat-ui
+        PublicListener: !GetAtt [CfnEcsStack, Outputs.PublicLoadBalancerListener]
+        HostUrl: !Ref HostUrl
+        VpcId: !Ref VpcId
+        Priority: 2
+        DesiredCount: !Ref UIServiceDesiredCount
+        MaxCount: !Ref ServiceMaxCount
+        ImageUrl: !Join [ ':', [ !GetAtt [CfnEcrStack, Outputs.CvatUIECRRepository], !Ref 'CvatImageTag' ] ]
+        ContainerCpu: 256
+        ContainerMemory: 512
