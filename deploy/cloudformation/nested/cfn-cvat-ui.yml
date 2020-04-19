@@ -89,13 +89,6 @@ Resources:
           Image: !Ref 'ImageUrl'
           PortMappings:
             - ContainerPort: 80
-          Environment:
-            - Name: REACT_APP_API_PROTOCOL
-              Value: https
-            - Name: REACT_APP_API_HOST
-              Value: !Ref 'HostUrl'
-            - Name: REACT_APP_API_PORT
-              Value: 8443
           LogConfiguration:
             LogDriver: awslogs
             Options:

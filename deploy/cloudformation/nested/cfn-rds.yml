@@ -69,7 +69,7 @@ Resources:
         - !Ref "AWS::NoValue"
         - !Ref DbName
      DBInstanceClass: !Ref DbInstanceClass
-     DBInstanceIdentifier: !Join ['', [!Ref DbName, RDS]]
+     DBInstanceIdentifier: !Join ['-', [!Ref DbName, RDS]]
      DBSubnetGroupName: !Ref RDSSubnetGroup
      Engine: postgres
      EngineVersion: '11.2'
