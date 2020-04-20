@@ -252,7 +252,7 @@ Resources:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
         ScaleInCooldown: 60
         ScaleOutCooldown: 60
-        TargetValue: 70
+        TargetValue: 80
 
   AutoScalingPolicyMemory:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy

@@ -11,7 +11,7 @@
     "ECSSpotPrice": "0.2336",
     "ECSSpotInstanceType": "t2.xlarge",
     "ApiCpu": "1792",
-    "ApiMemory": "7500",
+    "ApiMemory": "7168",
     "UiCpu": "256",
     "UiMemory": "512",
     "APIServiceDesiredCount": "1",
