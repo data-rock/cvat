@@ -64,10 +64,13 @@ Parameters:
     Description: desired ECS instance capacity
     Type: Number
     Default: 4
+  ECSSpotInstanceType:
+    Type: String
+    Description: ECS instance type
   ECSSpotPrice:
     Description: Spot price to bid
     Type: Number
-    Default: 0.0584
+    Default: 0.2336
   APIServiceDesiredCount:
     Description: desired ECS instance capacity
     Type: Number
@@ -149,7 +152,7 @@ Resources:
         ServiceName: !Ref ServiceName
         DesiredCapacity: !Ref ECSDesiredCapacity
         MaxSize: !Ref ECSMaxCapacity
-        InstanceType: t2.medium
+        InstanceType: !Ref ECSSpotInstanceType
         SpotPrice: !Ref ECSSpotPrice
         EFSNameTag: CvatEFSVolume
         SSLCertificateArn:  !Ref SSLCertificateArn
