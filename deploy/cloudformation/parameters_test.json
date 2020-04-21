@@ -30,6 +30,6 @@
     "PublicSubnetTwo": "subnet-04a66456615238488",
     "PublicSubnetThree": "subnet-0091c53dc4bf257a0",
     "BastionSecurityGroup": "sg-0b0845c59ba4dd862",
-    "DBSnapshotIdentifier": "arn:aws:rds:ap-southeast-2:980755931163:snapshot:snapshot-after-migrate-vpc"
+    "DBSnapshotIdentifier": "arn:aws:rds:ap-southeast-2:980755931163:snapshot:snapshot-after-migrate-default-vpc"
   }
 }
