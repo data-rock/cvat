@@ -50,6 +50,7 @@ aws cloudformation deploy --no-fail-on-empty-changeset \
       $PARAMETER_OVERRIDES \
       CreateCvatApiService=true \
       CreateCvatUIService=true \
+    --tags Key=project,Value=cvat \
     --stack-name "$STACK_NAME" \
     --capabilities CAPABILITY_IAM \
     --capabilities CAPABILITY_NAMED_IAM \
